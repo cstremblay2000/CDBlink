@@ -2,21 +2,51 @@ import cv2 as cv
 import numpy as np
 import sys
 import logging
+import argparse
 
-VIDEO_PATH="./images/test.mp4"
-NAMED_WINDOW="w1"
-X1=2170
-Y1=835
-X2=2580
-Y2=1100
+# debugging and logging constants
+NAMED_WINDOW    = "w1"
+LOGGING_LEVEL   = logging.DEBUG
 
-square = np.array([[1,1,1],
-                   [1,1,1],
-                   [1,1,1]])
+# commandline args, constants for cropped
+CROP    = False
+X1      = 0
+Y1      = 0
+X2      = 0
+Y2      = 0
 
-def init_logging():
-    logging.basicConfig( level=logging.DEBUG )
-    return 
+# commandline args, constance for encoding
+ENCODING    = ""
+DOT         = 100
+DASH        = 300
+SPACE       = 500
+
+square = np.array( [[1,1,1],[1,1,1],[1,1,1]] )
+
+def parse_cli_args() -> argparse.Namespace:
+    """
+    description:
+        process commandline arguments, 
+        check -h for help 
+    returns:
+        the namespace created by argparse
+    """
+    # init parses and add arguments
+    parser = argparse.ArgumentParser( description="Process arguments" )
+    parser.add_argument( '-c', '--crop', nargs=4, \
+                         metavar='N', type=int, \
+                         help="x y dx dy -> crop image bounded by (x+dx,y+dy)") 
+    parser.add_argument( '-e', '--encoding', required=True, \
+                         choices=['morse', 'ascii'] )
+    parser.add_argument( 'filepath' )
+
+    # process arguments and populate relevant flags
+    parsed      = parser.parse_args() 
+    ENCODING    = parsed.encoding
+    FILEPATH    = parsed.filepath
+    if( parsed.crop != None ):
+        CROP    = True
+    return parsed
 
 def mahalanobis(x=None, data=None, cov=None):
     x_mu = x - np.mean(data)
@@ -38,11 +68,8 @@ def multi_ero(im, num, element=square):
     return im
 
 def main():
-    # initialize logging
-    init_logging()
-
     # get image and filter noise
-    img = cv.imread( sys.argv[1] )
+    img = cv.imread( args.filepath )
     blur = cv.GaussianBlur( img, (3,3), 0 )
     if( logging.root.level <= logging.DEBUG ):
         cv.imshow("Display window", blur )
@@ -105,4 +132,6 @@ def main():
     cap.release()
 
 if( __name__ == "__main__" ):
+    args = parse_cli_args()
+    logging.basicConfig( level=LOGGING_LEVEL )
     main()
