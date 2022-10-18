@@ -5,6 +5,10 @@ import logging
 
 VIDEO_PATH="./images/test.mp4"
 NAMED_WINDOW="w1"
+X1=2170
+Y1=835
+X2=2580
+Y2=1100
 
 square = np.array([[1,1,1],
                    [1,1,1],
@@ -73,18 +77,31 @@ def main():
         cv.waitKey( 0 )
 
     # open video 
+    cv.destroyAllWindows()
     cap = cv.VideoCapture( VIDEO_PATH )
     cv.namedWindow( NAMED_WINDOW, cv.WINDOW_NORMAL )
     while( cap.isOpened() ):
+        # get frame and check that it exists
         ret, frame = cap.read()
         if( not ret ):
             print( "cant receive frame" )
             break
-        
-        gray = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
+
+        # blur image and pull split channels
+        blur = cv.GaussianBlur( frame, (5,5), 0 )
+        b,g,r = cv.split( frame )
+         
+        # pull out rectangle of interest
+        rect = g[Y1:Y2,X1:X2]
+        print( rect )
+
+        # show
         if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW, gray )
-            cv.waitKey( 0 )
+            cv.imshow( NAMED_WINDOW, rect )
+            k = cv.waitKey( 0 )
+            if( k == ord( 'q' ) ):
+                cv.destroyAllWindows()
+                break 
     cap.release()
 
 if( __name__ == "__main__" ):
