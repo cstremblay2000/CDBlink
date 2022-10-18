@@ -64,6 +64,10 @@ def parse_cli_args():
     FILEPATH    = parsed.filepath
     if( parsed.crop != None ):
         CROP    = True
+        X       = parsed.crop[0]
+        Y       = parsed.crop[1]
+        DX      = parsed.crop[2]
+        DY      = parsed.crop[3]
     return parsed
 
 def main():
@@ -88,13 +92,13 @@ def main():
         blur = cv.GaussianBlur( frame, (5,5), 0 )
         b,g,r = cv.split( frame )
          
-        # pull out rectangle of interest
-        rect = g[Y:DY,X:DX]
-        print( rect )
+        # crop if specified
+        if( CROP ):
+            g = g[Y:Y+DY,X:X+DX]
 
         # show
         if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW, rect )
+            cv.imshow( NAMED_WINDOW, g )
             k = cv.waitKey( 0 )
             if( k == ord( 'q' ) ):
                 cv.destroyAllWindows()
