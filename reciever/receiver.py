@@ -71,7 +71,7 @@ def parse_cli_args():
         DY      = parsed.crop[3]
     return parsed
 
-def light_on( binarized, connectivity=4 ) -> bool:
+def light_on( binarized, connectivity:int=4 ) -> bool:
     """
     description:
         Using connected components analysis, checks if there is a light
