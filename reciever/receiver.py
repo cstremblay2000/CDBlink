@@ -73,6 +73,14 @@ def parse_cli_args():
 
 def light_on( binarized, connectivity=4 ) -> bool:
     """
+    description:
+        Using connected components analysis, checks if there is a light
+        detected in the given frame
+    parameters:
+        binarized       -> the frame in black and white 
+        connectivitiy   -> the connectivity passed to cv2.connectedComponents 
+    returns: 
+        True more than 1 blob is detected, false otherwise
     """
     # connnected component analysis
     analysis = cv.connectedComponentsWithStats( binarized, connectivity, \
