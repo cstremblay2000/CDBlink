@@ -15,7 +15,8 @@ import argparse
 
 # debugging and logging constants
 NAMED_WINDOW    = "w1"
-LOGGING_LEVEL   = logging.DEBUG
+NAMED_WINDOW1   = "w2"
+LOGGING_LEVEL   = logging.INFO
 
 # populated after command line args are parsed
 FILEPATH    = ""
@@ -70,6 +71,16 @@ def parse_cli_args():
         DY      = parsed.crop[3]
     return parsed
 
+def light_on( binarized, connectivity=4 ) -> bool:
+    """
+    """
+    # connnected component analysis
+    analysis = cv.connectedComponentsWithStats( binarized, connectivity, \
+                                                cv.CV_32S )
+    (total_labels, label_ids, values, centroid) = analysis
+    logging.debug( "total labels %d" % total_labels )
+    return total_labels > 1
+
 def main():
     """
     description:
@@ -78,32 +89,75 @@ def main():
     # open video 
     cap = cv.VideoCapture( FILEPATH )
     logging.debug( "Opening file '%s'" % FILEPATH )
-    cv.namedWindow( NAMED_WINDOW, cv.WINDOW_NORMAL )
+
+    # get frame rate 
+    fps = cap.get(cv.CAP_PROP_FPS)
+    logging.debug( "framerate %d" % fps )
+    
+    # create debug windows
+    if( logging.root.level <= logging.DEBUG ):
+        cv.namedWindow( NAMED_WINDOW, cv.WINDOW_NORMAL )
+        cv.namedWindow( NAMED_WINDOW1, cv.WINDOW_NORMAL )
 
     # start processing video frame by frame
+    frame_total = 1
+    light_is_on = False
+    frames_on = 0
+    frames_off = 0
+    on_list = list()
+    off_list = list()
+
     while( cap.isOpened() ):
         # get frame and check that it exists
         ret, frame = cap.read()
         if( not ret ):
-            print( "cant receive frame" )
             break
+        if( logging.root.level <= logging.DEBUG ):
+            cv.imshow( NAMED_WINDOW1, frame )
+
+        # crop 
+        if( CROP ):
+            frame = frame[Y:Y+DY,X:X+DX]
+
+        # keep track of frames for timing
+        logging.debug( "frame: %d" % frame_total )
+        frame_total += 1
 
         # blur image and pull split channels
         blur = cv.GaussianBlur( frame, (5,5), 0 )
         b,g,r = cv.split( frame )
          
-        # crop if specified
-        if( CROP ):
-            g = g[Y:Y+DY,X:X+DX]
+        # binarize image, turn black and white
+        ret, binarized = cv.threshold( g, 127, 255, cv.THRESH_BINARY )
 
-        # show
+        # check if light on 
+        if( light_on( binarized ) ):
+            if( not light_is_on ):
+                logging.debug( "light turned on" )
+                off_list.append( frames_off )
+                frames_off = 0
+            frames_on += 1
+            light_is_on = True
+        else:
+            if( light_is_on ):
+                logging.debug( "light turned off" )
+                light_is_on = False
+                on_list.append( frames_on )
+                frames_on = 0
+            frames_off += 1
+
+        # show it
         if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW, g )
+            cv.imshow( NAMED_WINDOW, binarized )
             k = cv.waitKey( 0 )
             if( k == ord( 'q' ) ):
                 cv.destroyAllWindows()
-                break 
+                break
     cap.release()
+    logging.debug( "on list" + str(on_list) )
+    logging.debug( "off list" + str(off_list) )
+    times = [e/fps for e in on_list]
+    print( times )
 
 if( __name__ == "__main__" ):
     args = parse_cli_args()
