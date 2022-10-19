@@ -25,10 +25,11 @@ X           = 0
 Y           = 0
 DX          = 0
 DY          = 0
-ENCODING    = ""
+ENCODING    = "ascii"
 DOT         = 100
 DASH        = 300
 SPACE       = 500
+CHANNEL     = 'g'
 
 square = np.array( [[1,1,1],[1,1,1],[1,1,1]] )
 
@@ -40,13 +41,17 @@ def parse_cli_args():
     """
     # init parses and add arguments
     parser = argparse.ArgumentParser( description="Process arguments" )
+    parser.add_argument( '-e', '--encoding', \
+                         choices=['morse', 'ascii'],\
+                         help="encoding for recieved message, default ascii" )
+    parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', nargs=4, \
                          metavar='N', type=int, \
                          help="x y dx dy -> crop image bounded by (x+dx,y+dy)") 
-    parser.add_argument( '-e', '--encoding', required=True, \
-                         choices=['morse', 'ascii'] )
-    parser.add_argument( 'filepath' )
-
+    parser.add_argument( '-C', '--channel', choices=['r','g','b', 'none'],\
+                         help="Specify which channel to pull out and use to" +\
+                         "binarize image, default is green" )
+    
     # init variables as global
     global FILEPATH
     global CROP
@@ -58,6 +63,7 @@ def parse_cli_args():
     global DOT
     global DASH
     global SPACE
+    global CHANNEL
 
     # process arguments and populate relevant flags
     parsed      = parser.parse_args() 
@@ -69,6 +75,8 @@ def parse_cli_args():
         Y       = parsed.crop[1]
         DX      = parsed.crop[2]
         DY      = parsed.crop[3]
+    if( parsed.channel != None ):
+        CHANNEL = parsed.channel
     return
 
 def light_on( binarized, connectivity:int=4 ) -> bool:
@@ -123,20 +131,33 @@ def main():
         if( logging.root.level <= logging.DEBUG ):
             cv.imshow( NAMED_WINDOW1, frame )
 
-        # crop 
+        # crop image if specified by cli
         if( CROP ):
             frame = frame[Y:Y+DY,X:X+DX]
 
-        # keep track of frames for timing
+        # keep track of frames for debugging
         logging.debug( "frame: %d" % frame_total )
         frame_total += 1
 
-        # blur image and pull split channels
-        blur = cv.GaussianBlur( frame, (5,5), 0 )
-        b,g,r = cv.split( frame )
+        # blur image and split into 3 color channels
+        blur    = cv.GaussianBlur( frame, (5,5), 0 )
+        
+        # pull out channel if specified
+        channel = None
+        if( CHANNEL[0] != 'n' ):
+            b,g,r   = cv.split( frame )
+            if( CHANNEL == 'r' ):
+                channel = r
+            elif( CHANNEL == 'g' ):
+                channel = g
+            elif( CHANNEL == 'b' ):
+                channel = b
+        else: # grayscale channel to threshold it to binary later
+            channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
          
         # binarize image, turn black and white
-        ret, binarized = cv.threshold( g, 127, 255, cv.THRESH_BINARY )
+        # use green channel since lights used for testing are green
+        ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
 
         # check if light on 
         if( light_on( binarized ) ):
