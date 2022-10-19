@@ -69,7 +69,7 @@ def parse_cli_args():
         Y       = parsed.crop[1]
         DX      = parsed.crop[2]
         DY      = parsed.crop[3]
-    return parsed
+    return
 
 def light_on( binarized, connectivity:int=4 ) -> bool:
     """
@@ -168,6 +168,6 @@ def main():
     print( times )
 
 if( __name__ == "__main__" ):
-    args = parse_cli_args()
+    parse_cli_args()
     logging.basicConfig( level=LOGGING_LEVEL )
     main()
