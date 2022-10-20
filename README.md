@@ -25,7 +25,7 @@ top left corner, width, and height of the bounding rectangle to isolate the
 light. This can easily be found by changing the constant
 `LOGGING_LEVEL=logging.DEBUG` near the top of the `receiver.py` file and 
 using the OpenCV window to get the relevant coordinates. Changing
-`LOGGING_LEVEL=logging.INFO` will just run the script regularly wihtout any
+`LOGGING_LEVEL=logging.INFO` will just run the script regularly without any
 debug functionality.  
 
 ### Dependencies
