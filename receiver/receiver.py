@@ -48,7 +48,7 @@ def parse_cli_args():
                          nargs=4, \
                          metavar='N', 
                          type=int, \
-                         help="x y dx dy -> crop image bounded by (x+dx,y+dy)") 
+                         help="x y w h -> crop image bounded by (x+w,y+h)") 
     parser.add_argument( '-C', '--channel', 
                          choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
