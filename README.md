@@ -18,6 +18,16 @@ The script then counts the number of frames where the light is on, and uses the
 frame rate of the video to then determine the duration of time the light was on
 for.
 
+### How this should be used
+The idea to use this program is to crop out a small rectangle around the light
+being observed. This means that the user should know the coordinates of the
+top left corner, width, and height of the bounding rectangle to isolate the
+light. This can easily be found by changing the constant
+`LOGGING_LEVEL=logging.DEBUG` near the top of the `receiver.py` file and 
+using the OpenCV window to get the relevant coordinates. Changing
+`LOGGING_LEVEL=logging.INFO` will just run the script regularly wihtout any
+debug functionality.  
+
 ### Dependencies
 - [Python3](https://www.python.org/downloads/)
 - OpenCV2, `pip3 install opencv-python`
