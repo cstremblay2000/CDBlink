@@ -36,3 +36,23 @@ debug functionality.
 ### How to run
 - To run the program use `python3 receiver.py [filename]`
 - To see and example checkout `receiver/test_mp4.sh` 
+
+### Usage message
+```
+usage: receiver.py [-h] [-e {morse,ascii}] [-c N N N N] [-C {r,g,b,none}] filepath
+
+Process arguments
+
+positional arguments:
+  filepath
+
+options:
+  -h, --help            show this help message and exit
+  -e {morse,ascii}, --encoding {morse,ascii}
+                        encoding for recieved message, default ascii
+  -c N N N N, --crop N N N N
+                        x y w h -> crop image bounded by (x+w,y+h)
+  -C {r,g,b,none}, --channel {r,g,b,none}
+                        Specify which channel to pull out and use tobinarize image, default is
+                        green
+```
