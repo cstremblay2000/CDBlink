@@ -51,8 +51,10 @@ options:
   -e {morse,ascii}, --encoding {morse,ascii}
                         encoding for recieved message, default ascii
   -c N N N N, --crop N N N N
-                        x y w h -> crop image bounded by (x+w,y+h)
+                        x y W H -> crop image to a rectangle of WxH, with top left corner at
+                        (x,y)
   -C {r,g,b,none}, --channel {r,g,b,none}
                         Specify which channel to pull out and use to binarize image, default is
                         green
+
 ```
