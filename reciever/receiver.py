@@ -16,7 +16,8 @@ import argparse
 # debugging and logging constants
 NAMED_WINDOW    = "w1"
 NAMED_WINDOW1   = "w2"
-LOGGING_LEVEL   = logging.INFO
+FORMAT          = "[%(levelname)s %(funcName)-10s] %(message)s"
+LOGGING_LEVEL   = logging.DEBUG
 
 # populated after command line args are parsed
 FILEPATH    = ""        # path to video
@@ -194,5 +195,6 @@ def main():
 
 if( __name__ == "__main__" ):
     parse_cli_args()
-    logging.basicConfig( level=LOGGING_LEVEL )
+
+    logging.basicConfig( level=LOGGING_LEVEL, format=FORMAT )
     main()
