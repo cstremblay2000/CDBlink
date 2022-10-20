@@ -35,7 +35,7 @@ debug functionality.
 
 ### How to run
 - To run the program use `python3 receiver.py [filename]`
-- To see and example checkout `receiver/test_mp4.sh` 
+- To see an example checkout `receiver/test_mp4.sh` 
 
 ### Usage message
 ```
