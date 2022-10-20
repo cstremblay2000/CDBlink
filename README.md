@@ -53,6 +53,6 @@ options:
   -c N N N N, --crop N N N N
                         x y w h -> crop image bounded by (x+w,y+h)
   -C {r,g,b,none}, --channel {r,g,b,none}
-                        Specify which channel to pull out and use tobinarize image, default is
+                        Specify which channel to pull out and use to binarize image, default is
                         green
 ```
