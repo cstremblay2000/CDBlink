@@ -52,7 +52,7 @@ def parse_cli_args():
     parser.add_argument( '-C', '--channel', 
                          choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
-                         "binarize image, default is green" )
+                         " binarize image, default is green" )
     
     # init variables as global
     global FILEPATH
