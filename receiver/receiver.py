@@ -144,7 +144,7 @@ def main():
         frame_total += 1
 
         # blur image and split into 3 color channels
-        blur    = cv.GaussianBlur( frame, (5,5), 0 )
+        blur = cv.GaussianBlur( frame, (5,5), 0 )
         
         # pull out channel if specified
         channel = None
