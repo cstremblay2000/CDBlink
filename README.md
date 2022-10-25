@@ -1,5 +1,5 @@
 # CDBlink
-Modulates reading and writing data to a USB CD drive to make it blink to encode data
+Modulates reading and writing data to a USB CD drive to make the onboard LED blink 
 
 ## Sender
 
