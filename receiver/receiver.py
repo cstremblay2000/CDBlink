@@ -196,6 +196,5 @@ def main():
 
 if( __name__ == "__main__" ):
     parse_cli_args()
-
     logging.basicConfig( level=LOGGING_LEVEL, format=FORMAT )
     main()
