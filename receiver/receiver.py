@@ -16,22 +16,21 @@ import argparse
 # debugging and logging constants
 NAMED_WINDOW    = "w1"
 NAMED_WINDOW1   = "w2"
-LOGGING_LEVEL   = logging.INFO
+FORMAT          = "[%(levelname)s %(funcName)-10s] %(message)s"
+LOGGING_LEVEL   = logging.DEBUG
 
 # populated after command line args are parsed
-FILEPATH    = ""
-CROP        = False
-X           = 0
-Y           = 0
-DX          = 0
-DY          = 0
-ENCODING    = "ascii"
-DOT         = 100
-DASH        = 300
-SPACE       = 500
-CHANNEL     = 'g'
-
-square = np.array( [[1,1,1],[1,1,1],[1,1,1]] )
+FILEPATH    = ""        # path to video
+CROP        = False     # crop image at all
+X           = 0         # top left corner, for cropping
+Y           = 0         # top right cornerm for cropping
+DX          = 0         # how much rectangle extends right
+DY          = 0         # how much rectangle extends down
+ENCODING    = "ascii"   # how blinks are interpurted
+DOT         = 100       # ms
+DASH        = 300       # ms
+SPACE       = 500       # ms
+CHANNEL     = 'g'       # which color channel to pull out
 
 def parse_cli_args():
     """
@@ -42,15 +41,19 @@ def parse_cli_args():
     # init parses and add arguments
     parser = argparse.ArgumentParser( description="Process arguments" )
     parser.add_argument( '-e', '--encoding', \
-                         choices=['morse', 'ascii'],\
+                         choices=['morse', 'ascii'], \
                          help="encoding for recieved message, default ascii" )
     parser.add_argument( 'filepath' )
-    parser.add_argument( '-c', '--crop', nargs=4, \
-                         metavar='N', type=int, \
-                         help="x y dx dy -> crop image bounded by (x+dx,y+dy)") 
-    parser.add_argument( '-C', '--channel', choices=['r','g','b', 'none'],\
+    parser.add_argument( '-c', '--crop', \
+                         nargs=4, \
+                         metavar='N', 
+                         type=int, \
+                         help="x y W H -> crop image to a rectangle of" +\
+                         " WxH, with top left corner at (x,y)" ) 
+    parser.add_argument( '-C', '--channel', 
+                         choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
-                         "binarize image, default is green" )
+                         " binarize image, default is green" )
     
     # init variables as global
     global FILEPATH
@@ -91,11 +94,12 @@ def light_on( binarized, connectivity:int=4 ) -> bool:
         True more than 1 blob is detected, false otherwise
     """
     # connnected component analysis
-    analysis = cv.connectedComponentsWithStats( binarized, connectivity, \
-                                                cv.CV_32S )
-    (total_labels, label_ids, values, centroid) = analysis
-    logging.debug( "total labels %d" % total_labels )
-    return total_labels > 1
+    ret, labels = cv.connectedComponents( binarized, connectivity )
+
+    # pull out analysis
+    min_val, max_val, _, _ = cv.minMaxLoc( labels )
+    logging.debug( "min %d max %d" % (min_val, max_val ) ) 
+    return max_val >= 1
 
 def main():
     """
@@ -140,7 +144,7 @@ def main():
         frame_total += 1
 
         # blur image and split into 3 color channels
-        blur    = cv.GaussianBlur( frame, (5,5), 0 )
+        blur = cv.GaussianBlur( frame, (5,5), 0 )
         
         # pull out channel if specified
         channel = None
@@ -183,12 +187,14 @@ def main():
                 cv.destroyAllWindows()
                 break
     cap.release()
+
+    # show results
     logging.debug( "on list" + str(on_list) )
     logging.debug( "off list" + str(off_list) )
     times = [e/fps for e in on_list]
-    print( times )
+    print( "durations light is on", times )
 
 if( __name__ == "__main__" ):
     parse_cli_args()
-    logging.basicConfig( level=LOGGING_LEVEL )
+    logging.basicConfig( level=LOGGING_LEVEL, format=FORMAT )
     main()
