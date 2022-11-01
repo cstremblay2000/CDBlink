@@ -1,0 +1,9 @@
+reciever/images/green.jpg filter=lfs diff=lfs merge=lfs -text
+reciever/images/green_red.jpg filter=lfs diff=lfs merge=lfs -text
+reciever/images/HDD-LED.jpg filter=lfs diff=lfs merge=lfs -text
+reciever/images/lights.jpeg filter=lfs diff=lfs merge=lfs -text
+reciever/images/morse_hello.mp4 filter=lfs diff=lfs merge=lfs -text
+reciever/images/test.mov filter=lfs diff=lfs merge=lfs -text
+reciever/images/test.mp4 filter=lfs diff=lfs merge=lfs -text
+reciever/images/color.jpg filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
