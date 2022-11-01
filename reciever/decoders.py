@@ -153,7 +153,7 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
             msg += decode_dict[buffer]
             buffer = dot_dash
 
-    if( buffer != "" ):
+    if( buffer != "" && buffer in decode_dict.keys() ):
         msg += decode_dict[buffer]
     return msg
 
