@@ -12,6 +12,8 @@ import numpy as np
 import sys
 import logging
 import argparse
+import math
+import decoders
 
 # debugging and logging constants
 NAMED_WINDOW    = "w1"
@@ -26,10 +28,16 @@ Y           = 0
 DX          = 0
 DY          = 0
 ENCODING    = "ascii"
-DOT         = 100
-DASH        = 300
-SPACE       = 500
 CHANNEL     = 'g'
+DECODER     = None
+LIGHT_ON_FIRST_FRAME = False
+
+# Morse constants
+MORSE_DOT   = 1 # second
+MORSE_DASH  = 3 # seconds
+MORSE_SPACE_SIGNAL  = 1 # seconds
+MORSE_SPACE_LETTERS = 3 # seconds
+MORSE_SPACE_WORDS   = 7 # seconds
 
 square = np.array( [[1,1,1],[1,1,1],[1,1,1]] )
 
@@ -64,6 +72,7 @@ def parse_cli_args():
     global DASH
     global SPACE
     global CHANNEL
+    global DECODER
 
     # process arguments and populate relevant flags
     parsed      = parser.parse_args() 
@@ -137,10 +146,9 @@ def main():
 
         # keep track of frames for debugging
         logging.debug( "frame: %d" % frame_total )
-        frame_total += 1
 
         # blur image and split into 3 color channels
-        blur    = cv.GaussianBlur( frame, (5,5), 0 )
+        blur = cv.GaussianBlur( frame, (5,5), 0 )
         
         # pull out channel if specified
         channel = None
@@ -161,10 +169,15 @@ def main():
 
         # check if light on 
         if( light_on( binarized ) ):
+            # for decoding purposes
+            if( frame_total == 1 ):
+                LIGHT_ON_FIRST_FRAME = True
+
             if( not light_is_on ):
                 logging.debug( "light turned on" )
                 off_list.append( frames_off )
                 frames_off = 0
+
             frames_on += 1
             light_is_on = True
         else:
@@ -182,11 +195,21 @@ def main():
             if( k == ord( 'q' ) ):
                 cv.destroyAllWindows()
                 break
+        frame_total += 1
     cap.release()
+
     logging.debug( "on list" + str(on_list) )
     logging.debug( "off list" + str(off_list) )
-    times = [e/fps for e in on_list]
-    print( times )
+    times_on  = [e/fps for e in on_list]
+    times_off = [e/fps for e in off_list ]
+
+    for d in times_on:
+        print( "on  %f" % d )
+
+    for d in times_off:
+        print( "off %f" % d )
+
+    print( "len on %d, len off %d" % (len(times_on), len(times_off)) )
 
 if( __name__ == "__main__" ):
     parse_cli_args()
