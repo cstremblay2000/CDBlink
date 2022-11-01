@@ -27,10 +27,9 @@ X           = 0
 Y           = 0
 DX          = 0
 DY          = 0
-ENCODING    = "ascii"
+ENCODING    = "morse"
 CHANNEL     = 'g'
 DECODER     = None
-LIGHT_ON_FIRST_FRAME = False
 
 # Morse constants
 MORSE_DOT   = 1 # second
@@ -51,7 +50,7 @@ def parse_cli_args():
     parser = argparse.ArgumentParser( description="Process arguments" )
     parser.add_argument( '-e', '--encoding', \
                          choices=['morse', 'ascii'],\
-                         help="encoding for recieved message, default ascii" )
+                         help="encoding for recieved message, default morse" )
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', nargs=4, \
                          metavar='N', type=int, \
@@ -77,6 +76,10 @@ def parse_cli_args():
     # process arguments and populate relevant flags
     parsed      = parser.parse_args() 
     ENCODING    = parsed.encoding
+    if( ENCODING == "ascii" ):
+        DECODER = decoders.decode_ascii
+    else:
+        DECODER = decoders.decode_morse
     FILEPATH    = parsed.filepath
     if( parsed.crop != None ):
         CROP    = True
@@ -131,6 +134,7 @@ def main():
     frames_off = 0
     on_list = list()
     off_list = list()
+    LIGHT_ON_FIRST_FRAME = False
 
     while( cap.isOpened() ):
         # get frame and check that it exists
@@ -211,6 +215,9 @@ def main():
 
     print( "len on %d, len off %d" % (len(times_on), len(times_off)) )
 
+    print( times_on )
+    print( times_off )
+    print( DECODER( times_on, times_off, LIGHT_ON_FIRST_FRAME ) )
 if( __name__ == "__main__" ):
     parse_cli_args()
     logging.basicConfig( level=LOGGING_LEVEL )
