@@ -117,7 +117,7 @@ def main():
     logging.debug( "Opening file '%s'" % FILEPATH )
 
     # get frame rate 
-    fps = cap.get(cv.CAP_PROP_FPS)
+    fps = cap.get( cv.CAP_PROP_FPS )
     logging.debug( "framerate %d" % fps )
     
     # create debug windows
@@ -150,6 +150,12 @@ def main():
         logging.debug( "frame: %d" % frame_total )
 
         # blur image and split into 3 color channels
+        # a 5x5 gaussian filter
+        # | 1  4  7  4  1 |
+        # | 4 16 26 16  4 |    1
+        # | 7 26 41 26  7 | X ---
+        # | 4 16 26 16  4 |   273
+        # | 1  4  7  4  1 |
         blur = cv.GaussianBlur( frame, (5,5), 0 )
         
         # pull out channel if specified
@@ -205,6 +211,7 @@ def main():
     times_on  = [e/fps for e in on_list]
     times_off = [e/fps for e in off_list ]
 
+    # print out results
     for d in times_on:
         print( "on  %f" % d )
 
@@ -216,6 +223,7 @@ def main():
     print( times_on )
     print( times_off )
     print( DECODER( times_on, times_off, LIGHT_ON_FIRST_FRAME ) )
+    
 if( __name__ == "__main__" ):
     parse_cli_args()
     main()
