@@ -50,6 +50,8 @@ def parse_cli_args():
     parser.add_argument( '-C', '--channel', choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
                          "binarize image, default is green" )
+    parser.add_argument( '-d', '--debug', help='debugging mode', \
+                         action='store_true' )
     
     # init variables as global
     global FILEPATH
@@ -64,6 +66,7 @@ def parse_cli_args():
     global SPACE
     global CHANNEL
     global DECODER
+    global LOGGING_LEVEL
 
     # process arguments and populate relevant flags
     parsed      = parser.parse_args() 
@@ -81,6 +84,9 @@ def parse_cli_args():
         DY      = parsed.crop[3]
     if( parsed.channel != None ):
         CHANNEL = parsed.channel
+    if( parsed.debug ):
+        LOGGING_LEVEL = logging.DEBUG
+    logging.basicConfig( level=LOGGING_LEVEL )
     return
 
 def light_on( binarized, connectivity:int=4 ) -> bool:
@@ -212,5 +218,4 @@ def main():
     print( DECODER( times_on, times_off, LIGHT_ON_FIRST_FRAME ) )
 if( __name__ == "__main__" ):
     parse_cli_args()
-    logging.basicConfig( level=LOGGING_LEVEL )
     main()
