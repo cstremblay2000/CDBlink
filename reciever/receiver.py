@@ -38,7 +38,8 @@ def parse_cli_args():
         check -h for help 
     """
     # init parses and add arguments
-    parser = argparse.ArgumentParser( description="Process arguments" )
+    parser = argparse.ArgumentParser( description="decode a message from " +
+            "flashing lights" )
     parser.add_argument( '-e', '--encoding', \
                          choices=['morse', 'ascii'],\
                          help="encoding for recieved message, default morse" )
