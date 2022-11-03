@@ -126,13 +126,13 @@ def main():
         cv.namedWindow( NAMED_WINDOW1, cv.WINDOW_NORMAL )
 
     # start processing video frame by frame
-    frame_total = 1
-    light_is_on = False
-    frames_on = 0
-    frames_off = 0
-    on_list = list()
-    off_list = list()
-    LIGHT_ON_FIRST_FRAME = False
+    frame_total             = 1
+    light_is_on             = False
+    frames_on               = 0
+    frames_off              = 0
+    on_list                 = list()
+    off_list                = list()
+    LIGHT_ON_FIRST_FRAME    = False
 
     while( cap.isOpened() ):
         # get frame and check that it exists
