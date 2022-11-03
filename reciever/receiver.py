@@ -156,6 +156,11 @@ def main():
         # | 7 26 41 26  7 | X ---
         # | 4 16 26 16  4 |   273
         # | 1  4  7  4  1 |
+        #
+        # a 3x3 mean filter
+        # | 1 1 1 |   1
+        # | 1 1 1 | X -
+        # | 1 1 1 |   9
         blur = cv.GaussianBlur( frame, (5,5), 0 )
         
         # pull out channel if specified
