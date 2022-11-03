@@ -39,9 +39,10 @@ debug functionality.
 
 ### Usage message
 ```
-usage: receiver.py [-h] [-e {morse,ascii}] [-c N N N N] [-C {r,g,b,none}] filepath
+usage: receiver.py [-h] [-e {morse,ascii}] [-c N N N N] [-C {r,g,b,none}] [-d]
+                   filepath
 
-Process arguments
+decode a message from flashing lights
 
 positional arguments:
   filepath
@@ -49,12 +50,11 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -e {morse,ascii}, --encoding {morse,ascii}
-                        encoding for recieved message, default ascii
+                        encoding for recieved message, default morse
   -c N N N N, --crop N N N N
-                        x y W H -> crop image to a rectangle of WxH, with top left corner at
-                        (x,y)
+                        x y dx dy -> crop image bounded by (x+dx,y+dy)
   -C {r,g,b,none}, --channel {r,g,b,none}
-                        Specify which channel to pull out and use to binarize image, default is
-                        green
-
+                        Specify which channel to pull out and use tobinarize
+                        image, default is green
+  -d, --debug           debugging mode
 ```
