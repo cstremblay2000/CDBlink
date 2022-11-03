@@ -1,5 +1,6 @@
 # ignored files
 sender/log.txt
+sender/a.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -130,3 +131,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+sender/c_prototype
+.vscode/tasks.json

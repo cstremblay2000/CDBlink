@@ -2,11 +2,13 @@
 #include <linux/ioctl.h>
 
 void transmit(){
-    int buffer;
+    int buffer[1024];
     FILE *fp;
-    fp = fopen("/dev/sr0", "r");
+    fp = open("/dev/sr0", "r");
+    setvbuf(fp, NULL, _IONBF, 0);
 
-    fread(&buffer, sizeof(int), 1, fp);
+    read(&buffer, sizeof(buffer), 1024, fp);
+    fclose(fp);
 }
 
 int main(void){
