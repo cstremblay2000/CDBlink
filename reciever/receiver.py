@@ -31,15 +31,6 @@ ENCODING    = "morse"
 CHANNEL     = 'g'
 DECODER     = None
 
-# Morse constants
-MORSE_DOT   = 1 # second
-MORSE_DASH  = 3 # seconds
-MORSE_SPACE_SIGNAL  = 1 # seconds
-MORSE_SPACE_LETTERS = 3 # seconds
-MORSE_SPACE_WORDS   = 7 # seconds
-
-square = np.array( [[1,1,1],[1,1,1],[1,1,1]] )
-
 def parse_cli_args():
     """
     description:
