@@ -1,2 +1,2 @@
 #!/bin/bash
-python receiver.py -c 1950 985 70 70 ./images/morse_hello.mp4
+python receiver.py -c 990 595 90 50 ./images/morse_hello.mp4

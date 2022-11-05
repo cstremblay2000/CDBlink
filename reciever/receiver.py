@@ -216,15 +216,6 @@ def main():
     times_on  = [e/fps for e in on_list]
     times_off = [e/fps for e in off_list ]
 
-    # print out results
-    for d in times_on:
-        print( "on  %f" % d )
-
-    for d in times_off:
-        print( "off %f" % d )
-
-    print( "len on %d, len off %d" % (len(times_on), len(times_off)) )
-
     print( times_on )
     print( times_off )
     print( DECODER( times_on, times_off, LIGHT_ON_FIRST_FRAME ) )
