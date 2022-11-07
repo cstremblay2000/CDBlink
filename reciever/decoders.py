@@ -54,28 +54,75 @@ MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
 A_TEST_ON = [16.398103329009942, 1.4331675673728201, 1.1998612191958495, 1.2331906975068454, 2.2997340034587115, 3.332947831099582, 1.5664854806168036, 2.166416090214728, 2.1330866119037326, 1.266520175817841, 1.3665086107508286, 1.4331675673728201]
 A_TEST_OFF = [0.0, 0.6665895662199164, 0.6332600879089205, 0.6999190445309122, 0.6665895662199164, 3.5662541792765525, 2.366392960080703, 0.366624261420954, 2.7330172215016573, 0.6999190445309122, 0.6332600879089205, 0.5666011312869289]
 
-def ook_bfsk_decode( dur_on:list, dur_off:list, lff:bool ) -> str:
+A_TEST_ON_1 = [16.933333333333334, 1.2, 1.2666666666666667, 1.2333333333333334, 3.933333333333333, 1.2333333333333334, 2.7333333333333334, 1.2666666666666667, 3.933333333333333, 2.7333333333333334, 2.7666666666666666, 2.7, 2.7666666666666666, 6.3, 1.2666666666666667, 1.2333333333333334, 1.2333333333333334]
+A_TEST_OFF_1 = [1.8666666666666667, 4.766666666666667, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 2.7, 1.6666666666666667, 0.6333333333333333, 0.6666666666666666, 1.6666666666666667, 0.6666666666666666, 1.6666666666666667, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666]
+
+def ook_bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
     """
-    # classify durations into bits
-    idx_on = 0
-    idx_off = 0
-    time_on = -1
-    time_off = -1
-    bit_string = ''
-    while( idx_on < len( dur_on ) and idx_off < len( dur_off ) ):
-        time_on = dur_on[idx_on]
-        time_off = dur_off[idx_off]
-        idx_on += 1
-        idx_off =+ 1
+    # init local vars
+    bitstring_on = list()
+    bitstring_off = list()
+    bitstring = ''
 
-        print( "on %2.2f off %2.2f bitstring %s" \
-                % (time_on, time_off, bit_string ) )
+    # classify bits on 
+    for dur in dur_on:
+        num_bits = round( dur/1.2 ) # actual time is closer to 1.5
+        if( num_bits == 0 ):
+            num_bits = 1
+        bitstring_on.append( '1'*num_bits )
 
-        if( time_on > SPIN_UP_TIME_THRESH ):
+    for dur in dur_off:
+        num_bits = round( dur )
+        if( num_bits == 0 ):
+            num_bits = 1
+        bitstring_off.append( '0'*num_bits )
+
+    # join bit string, start at one to skip spin up time
+    idx_on = 1
+    idx_off = 1
+    on = ''
+    off = ''
+    ldon = len( bitstring_on )
+    ldoff = len( bitstring_off )
+    while( True ):
+        # check if still looping
+        if( idx_on >= ldon and idx_off >= ldoff ):
+            break
+
+        # if in bounds get element
+        if( idx_on < ldon ):
+            on = bitstring_on[idx_on]
+            idx_on += 1
+        if( idx_off < ldoff ):
+            if( idx_off == 1 ):
+                off = ''
+            else:
+                off = bitstring_off[idx_off]
+            idx_off += 1
+
+        # assemble bitstring in corret order if light was on first
+        if( lff ):
+            bitstring += on + off
+        else:
+            bitstring += off + on
+        
+    return bitstring
+
+def ook_manchester_decode( bitstring:str ) -> str:
+    """
+    """
+    # create 7 bit substrings 
+    substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
+
+    # decode message
+    msg = ""
+    for ss in substrings:
+        if( ss == OOK_BFSK_PRE_POST_SYNC ):
             continue
-
-    return ""
+        else:
+            msg += chr( int( ss, 2 ) ) 
+    return msg
 
 def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
     """
@@ -183,12 +230,20 @@ def main():
         little test suite
     """
     # decode morse
+    print( "morse test" )
     msg = decode_morse( TEST_ON, TEST_OFF, False )
-    print( msg )
+    print( "\t", msg )
+    print( "done" )
+    print()
 
     # decode ascii
-    ook_bfsk_decode( A_TEST_ON, A_TEST_OFF, False )
+    print( "ascii test" )
+    bs = ook_bfsk_demodulate( A_TEST_ON_1, A_TEST_OFF_1, False )
+    print( "\t","demodulated", len( bs ), bs )
 
+    msg = ook_manchester_decode( bs )
+    print( "\t", msg )
+    print( "done" )
     return
 
 if( __name__ == "__main__" ):
