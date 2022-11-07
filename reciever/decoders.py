@@ -15,12 +15,21 @@ MORSE_DASH  = 3 # seconds
 MORSE_SPACE_SIGNAL  = 1 # seconds
 MORSE_SPACE_LETTER  = 3 # seconds
 MORSE_SPACE_WORD    = 7 # seconds
-MORSE_FILEPATH      = "./morse_code.txt"
 
 # Enums
 SPACES = Enum( 'MorseSpaces', ['SIGNAL','LETTER', 'WORD' ] )
 
-# test data
+# morse dictionary 
+MORSE_DICT = {'01': 'a', '1000': 'b', '1010': 'c', '100': 'd', '0': 'e', 
+              '0010': 'f', '110': 'g', '0000': 'h', '00': 'i', '0111': 'j', 
+              '101': 'k', '0100': 'l', '11': 'm', '10': 'n', '111': 'o', 
+              '0110': 'p', '1101': 'q', '010': 'r', '000': 's', '1': 't', 
+              '001': 'u', '0001': 'v', '011': 'w', '1001': 'x', '1011': 'y', 
+              '1100': 'z', '11111': '0', '01111': '1', '001111': '2', 
+              '00011': '3', '00001': '4', '00000': '5', '10000': '6', 
+              '11000': '7', '11100': '8', '11110': '9'}
+
+# test date says hello
 TEST_ON=[22.233333333333334, 1.5, 1.5, 1.5333333333333334, 1.5666666666666667, \
          1.5333333333333334, 1.5333333333333334, 3.1, 1.5666666666666667, \
          1.5333333333333334, 1.5666666666666667, 3.066666666666667, \
@@ -33,27 +42,6 @@ TEST_OFF=[0.8666666666666667, 0.6666666666666666, 0.7, 0.6666666666666666, \
           2.8666666666666666, 0.6666666666666666, 0.6666666666666666, \
           0.6666666666666666, 2.8666666666666666, 0.6666666666666666, \
           0.6666666666666666, 0.6]
-
-def load_morse_dict( filepath:str ) -> dict:
-    """
-    description:
-        Loads the morse dictionary into python dict
-    parameters:
-        filepath -> the path to the file containing morse
-                    structured a=101
-                    where 1 is a dot and 0 is a dash
-    returns:
-        the dictionary for morse to ascii
-    """
-    # open file
-    f = open( filepath, 'r' )
-
-    # populate dict
-    morse_to_ascii = dict()
-    for line in f:
-        split_line = (line.strip()).split( "=" )
-        morse_to_ascii[ split_line[1] ] = split_line[0]
-    return morse_to_ascii
 
 def decode_ascii( duration_on:list, duration_off: list ) -> str:
     """
@@ -127,9 +115,6 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     returns:
         the decoded message
     """
-    # load morse dictionary
-    decode_dict = load_morse_dict( MORSE_FILEPATH )
-
     # start decoding
     msg = "" 
     buffer = ""
@@ -148,14 +133,14 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
         if( space == SPACES.SIGNAL or buffer == "" ):
             buffer += dot_dash
         if( space == SPACES.LETTER ):
-            msg += decode_dict[buffer]
+            msg += MORSE_DICT[buffer]
             buffer = dot_dash
         if( space == SPACES.WORD ):
-            msg += decode_dict[buffer]
+            msg += MORSE_DICT[buffer]
             buffer = dot_dash
 
-    if( buffer != "" and buffer in decode_dict.keys() ):
-        msg += decode_dict[buffer]
+    if( buffer != "" and buffer in MORSE_DICT.keys() ):
+        msg += MORSE_DICT[buffer]
     return msg
 
 def main():
@@ -163,10 +148,6 @@ def main():
     description:
         little test suite
     """
-    # test dict
-    d = load_morse_dict( MORSE_FILEPATH )
-    print( d )
-
     # decode morse
     msg = decode_morse( TEST_ON, TEST_OFF, False )
     print( msg )
