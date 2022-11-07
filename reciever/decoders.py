@@ -43,7 +43,18 @@ TEST_OFF=[0.8666666666666667, 0.6666666666666666, 0.7, 0.6666666666666666, \
           0.6666666666666666, 2.8666666666666666, 0.6666666666666666, \
           0.6666666666666666, 0.6]
 
-def decode_ascii( duration_on:list, duration_off: list ) -> str:
+# ASCII encoding constants
+OOK_BFSK_PRE_POST_SYNC = '1010101'
+MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
+
+def ook_bfsk_decode( dur_on:list, dur_off:list ) -> str:
+    """
+    """
+    # classify durations into bits
+
+    return
+
+def decode_ascii( dur_on:list, dur_off: list, encoding:int ) -> str:
     """
     """
     # TODO
@@ -119,7 +130,7 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     msg = "" 
     buffer = ""
     for i in range( 1, max( len( dur_on ), len( dur_off ) ) ):
-        # for sync messages
+        # for sync messages, probably a better way to do this but oh well
         if( dur_on[i] > 10 ):
             continue 
 
@@ -151,6 +162,8 @@ def main():
     # decode morse
     msg = decode_morse( TEST_ON, TEST_OFF, False )
     print( msg )
+
+    # decode ascii
 
     return
 
