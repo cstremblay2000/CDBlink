@@ -109,7 +109,7 @@ def ook_manchester_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
             idx_on += 1
         if( idx_off < ldoff ):
             if( idx_off == 1 ):
-                off = ''
+                off = '' # skip 5s wait
             else:
                 off = bitstring_off[idx_off]
             idx_off += 1
@@ -143,6 +143,24 @@ def ook_bfsk_decode( bitstring:str ) -> str:
         else:
             msg += chr( int( ss, 2 ) ) 
     return msg
+
+def manchester_decode( bitstring:str ) -> str:
+    """
+    description:
+        decodes a string that uses machester encoding
+        01 encodes a 0 
+        10 encodes a 1
+    parameters:
+        bitstring -> the bit string that needs to be decoded
+    returns:
+        the decoded message
+    """
+    msg = ""
+
+    substrings = bitstring.split( MANCHESTER_DECODE_SYNC )
+    for ss in substrings:
+        print( ss )
+    return ""
 
 def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
     """
