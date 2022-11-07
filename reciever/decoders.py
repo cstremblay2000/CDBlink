@@ -57,8 +57,20 @@ A_TEST_OFF = [0.0, 0.6665895662199164, 0.6332600879089205, 0.6999190445309122, 0
 A_TEST_ON_1 = [16.933333333333334, 1.2, 1.2666666666666667, 1.2333333333333334, 3.933333333333333, 1.2333333333333334, 2.7333333333333334, 1.2666666666666667, 3.933333333333333, 2.7333333333333334, 2.7666666666666666, 2.7, 2.7666666666666666, 6.3, 1.2666666666666667, 1.2333333333333334, 1.2333333333333334]
 A_TEST_OFF_1 = [1.8666666666666667, 4.766666666666667, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 2.7, 1.6666666666666667, 0.6333333333333333, 0.6666666666666666, 1.6666666666666667, 0.6666666666666666, 1.6666666666666667, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 0.6666666666666666]
 
-def ook_bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
+def ook_machester_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
+    description:
+        demodulates a list of durations into a bitstring
+        using on-off-keying (ook) or manchester encoding
+        note, the time that a light is on might not actually be closer
+        to 1.2-1.5 seconds when it should be one. there is a compensation
+        mechanism in the for first for loop that accomodats for that
+    parameters:
+        dur_on  -> the list of durations the light is on for
+        dur_off -> the list of durations the light is off for
+        lff     -> if the light is on for the first frame (light first frame)
+    returns:
+        a string containing ascii 1's and 0's
     """
     # init local vars
     bitstring_on = list()
@@ -109,8 +121,15 @@ def ook_bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         
     return bitstring
 
-def ook_manchester_decode( bitstring:str ) -> str:
+def ook_bsfk_decode( bitstring:str ) -> str:
     """
+    description:
+        decodes a bitstring if it has been demodulated from 
+        on-off-keying (ook) or binary frequency shift keying (bfsk)
+    parameters:
+        bitstring -> the ascii string containing 1's and 0's
+    returns:
+        the decoded message
     """
     # create 7 bit substrings 
     substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
@@ -238,11 +257,19 @@ def main():
 
     # decode ascii
     print( "ascii test" )
+    print( "\t", "ook test, expecting hello" )
     bs = ook_bfsk_demodulate( A_TEST_ON_1, A_TEST_OFF_1, False )
-    print( "\t","demodulated", len( bs ), bs )
+    print( "\t","demodulated", len( bs ), "bits" , bs )
 
     msg = ook_manchester_decode( bs )
-    print( "\t", msg )
+    print( "\t", "decoded", msg )
+    print()
+
+    print( "\t", "manchester test, expecting abc" )
+    print( "\t", "not implemented yet" )
+
+    print( "\t", "bfsk test, expecting abc" )
+    print( "\t", "not implemented yet" )
     print( "done" )
     return
 
