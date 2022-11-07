@@ -9,6 +9,9 @@ description:
 
 from enum import Enum
 
+# shared constants
+SPIN_UP_TIME_THRESH = 10
+
 # Morse time constants
 MORSE_DOT   = 1 # second
 MORSE_DASH  = 3 # seconds
@@ -29,7 +32,7 @@ MORSE_DICT = {'01': 'a', '1000': 'b', '1010': 'c', '100': 'd', '0': 'e',
               '00011': '3', '00001': '4', '00000': '5', '10000': '6', 
               '11000': '7', '11100': '8', '11110': '9'}
 
-# test date says hello
+# morse test data says hello
 TEST_ON=[22.233333333333334, 1.5, 1.5, 1.5333333333333334, 1.5666666666666667, \
          1.5333333333333334, 1.5333333333333334, 3.1, 1.5666666666666667, \
          1.5333333333333334, 1.5666666666666667, 3.066666666666667, \
@@ -47,14 +50,34 @@ TEST_OFF=[0.8666666666666667, 0.6666666666666666, 0.7, 0.6666666666666666, \
 OOK_BFSK_PRE_POST_SYNC = '1010101'
 MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
 
-def ook_bfsk_decode( dur_on:list, dur_off:list ) -> str:
+# ASCII test data
+A_TEST_ON = [16.398103329009942, 1.4331675673728201, 1.1998612191958495, 1.2331906975068454, 2.2997340034587115, 3.332947831099582, 1.5664854806168036, 2.166416090214728, 2.1330866119037326, 1.266520175817841, 1.3665086107508286, 1.4331675673728201]
+A_TEST_OFF = [0.0, 0.6665895662199164, 0.6332600879089205, 0.6999190445309122, 0.6665895662199164, 3.5662541792765525, 2.366392960080703, 0.366624261420954, 2.7330172215016573, 0.6999190445309122, 0.6332600879089205, 0.5666011312869289]
+
+def ook_bfsk_decode( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
     """
     # classify durations into bits
+    idx_on = 0
+    idx_off = 0
+    time_on = -1
+    time_off = -1
+    bit_string = ''
+    while( idx_on < len( dur_on ) and idx_off < len( dur_off ) ):
+        time_on = dur_on[idx_on]
+        time_off = dur_off[idx_off]
+        idx_on += 1
+        idx_off =+ 1
 
-    return
+        print( "on %2.2f off %2.2f bitstring %s" \
+                % (time_on, time_off, bit_string ) )
 
-def decode_ascii( dur_on:list, dur_off: list, encoding:int ) -> str:
+        if( time_on > SPIN_UP_TIME_THRESH ):
+            continue
+
+    return ""
+
+def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
     """
     """
     # TODO
@@ -131,7 +154,7 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     buffer = ""
     for i in range( 1, max( len( dur_on ), len( dur_off ) ) ):
         # for sync messages, probably a better way to do this but oh well
-        if( dur_on[i] > 10 ):
+        if( dur_on[i] > SPIN_UP_TIME_THRESH ):
             continue 
 
         # calculate distances of the duration on to dot or dash
@@ -164,6 +187,7 @@ def main():
     print( msg )
 
     # decode ascii
+    ook_bfsk_decode( A_TEST_ON, A_TEST_OFF, False )
 
     return
 
