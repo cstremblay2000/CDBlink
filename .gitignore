@@ -1,6 +1,7 @@
 # ignored files
 sender/log.txt
 sender/a.out
+log.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

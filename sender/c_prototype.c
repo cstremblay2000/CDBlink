@@ -1,14 +1,21 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <linux/ioctl.h>
+#include <linux/cdrom.h>
 
 void transmit(){
-    int buffer[1024];
-    FILE *fp;
-    fp = open("/dev/sr0", "r");
-    setvbuf(fp, NULL, _IONBF, 0);
+    int fp;
+    int32_t val, num;
+    fp = open("/dev/sr0", O_RDWR);
 
-    read(&buffer, sizeof(buffer), 1024, fp);
-    fclose(fp);
+    ioctl(fp, CDROMREADRAW, 0);
+
+    printf("Data: %d\n", val);
+    close(fp);
 }
 
 int main(void){
