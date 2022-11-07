@@ -2,6 +2,7 @@
 sender/log.txt
 sender/a.out
 log.txt
+sender/input.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

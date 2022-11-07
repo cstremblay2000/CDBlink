@@ -1,5 +1,8 @@
+from argparse import ArgumentParser
 from time import sleep
 from subprocess import run
+
+from yaml import parse
 
 
 # Convert message to morse code
@@ -158,18 +161,41 @@ def bsfk_transmit(code):
 
 # This program uses dd to transmit messages from cd/dvd drives using the access ligth
 def main():
-    print('CD-Blink Morse Code Transmitter')
+    print('CD-Blink Covert Channel Transmitter')
 
-    # Get user input
-    msg = input('Enter Mesage to Transmit:\n')
+    # Create and parse command line arguments
+    parser = ArgumentParser(description='CD-Blink Encoding and Transmission')
+    parser.add_argument('-c', '--codec', type=int, required=False, help='Encoding Scheme:\
+        1 = Morse(Alphanumeric Only) 2 = On-Off-Keying 3 = Manchester 4 = Binary Frequency Shift Keying')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-m', '--msg', type=str, required=False, help='Message to transmit')
+    group.add_argument('-f', '--file', type=str, required=False, help='File to read message from')
+    args = parser.parse_args()
 
-    # User chooses encoding scheme to use
-    print('Choose Encoding Scheme')
-    print('1 = Morse (Alphanumeric Only)')
-    print('2 = On-Off-Keying')
-    print('3 = Manchester')
-    print('4 = Binary Frequency Shift Keying')
-    encoding_choice = int(input(': '))
+    # Set message to transmit
+    if args.msg:
+        # Use message provided at command line
+        msg = args.msg
+    elif args.file:
+        # Read message from file
+        f = open(args.file, 'r')
+        msg = f.read()
+        f.close()
+    else:
+        # Get user input
+        msg = input('Enter Mesage to Transmit:\n')
+
+    # Set encoding scheme
+    if args.codec:
+        encoding_choice = args.codec
+    else:
+        # User chooses encoding scheme to use
+        print('Choose Encoding Scheme')
+        print('1 = Morse (Alphanumeric Only)')
+        print('2 = On-Off-Keying')
+        print('3 = Manchester')
+        print('4 = Binary Frequency Shift Keying')
+        encoding_choice = int(input(': '))
 
     # Encode and transmit using scheme users chose
     if encoding_choice == 1:
