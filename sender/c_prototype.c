@@ -4,17 +4,23 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <linux/ioctl.h>
+#include <sys/ioctl.h>
 #include <linux/cdrom.h>
 
 void transmit(){
     int fp;
     int32_t val, num;
-    fp = open("/dev/sr0", O_RDWR);
+    struct cdrom_read r;
+    char buffer[2360];
 
-    ioctl(fp, CDROMREADRAW, 0);
+    r.cdread_lba = 1;
+    r.cdread_bufaddr = buffer;
+    r.cdread_buflen = 2360;
+    fp = open("/dev/sr0", O_RDONLY);
 
-    printf("Data: %d\n", val);
+    ioctl(fp, CDROMREADRAW, &r);
+
+    printf("Data: %d\n", val );
     close(fp);
 }
 
