@@ -201,6 +201,7 @@ def manchester_decode( bitstring:str ) -> str:
     msg = ""
 
     substrings = bitstring.split( MANCHESTER_DECODE_SYNC )
+    print()
     for ss in substrings:
         print( ss )
     return ""
@@ -328,8 +329,12 @@ def main():
     print()
 
     print( "\t", "manchester test, expecting abc" )
-    print( "\t", "not implemented yet" )
-    print( )
+    bs = ook_manchester_demodulate( A_TEST_ON_2, A_TEST_OFF_1, False )
+    print( "\t", "demodulate", len( bs ), "bits", bs )
+
+    msg = manchester_decode( bs )
+    print( "\t", "decoded", msg )
+    print()
 
     print( "\t", "bfsk test, expecting abc" )
     print( "\t", "not implemented yet" )
