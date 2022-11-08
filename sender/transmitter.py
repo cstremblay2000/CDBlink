@@ -2,8 +2,6 @@ from argparse import ArgumentParser
 from time import sleep
 from subprocess import run
 
-from yaml import parse
-
 
 # Convert message to morse code
 def morse_encode(msg):
@@ -195,7 +193,7 @@ def main():
         print('2 = On-Off-Keying')
         print('3 = Manchester')
         print('4 = Binary Frequency Shift Keying')
-        encoding_choice = int(input(': '))
+        encoding_choice = int(input(':'))
 
     # Encode and transmit using scheme users chose
     if encoding_choice == 1:

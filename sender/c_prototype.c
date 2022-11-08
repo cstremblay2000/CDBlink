@@ -18,9 +18,10 @@ void transmit(){
     r.cdread_buflen = 2360;
     fp = open("/dev/sr0", O_RDONLY);
 
-    ioctl(fp, CDROMREADRAW, &r);
+    for (int i = 0; i < 6375; i++){
+        ioctl(fp, CDROMREADRAW, &r);
+    }
 
-    printf("Data: %d\n", val );
     close(fp);
 }
 
