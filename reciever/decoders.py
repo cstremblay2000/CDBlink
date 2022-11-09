@@ -20,6 +20,14 @@ MORSE_SPACE_SIGNAL  = 1 # seconds
 MORSE_SPACE_LETTER  = 3 # seconds
 MORSE_SPACE_WORD    = 7 # seconds
 
+# ASCII encoding constants
+OOK_BFSK_PRE_POST_SYNC = '1010101'
+MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
+
+# bfsk constants
+BFSK_ZERO   = 1 # seconds
+BFSK_ONE    = 2 # seconds
+
 # Enums
 SPACES = Enum( 'MorseSpaces', ['SIGNAL','LETTER', 'WORD' ] )
 
@@ -46,10 +54,6 @@ TEST_OFF=[0.8666666666666667, 0.6666666666666666, 0.7, 0.6666666666666666, \
           2.8666666666666666, 0.6666666666666666, 0.6666666666666666, \
           0.6666666666666666, 2.8666666666666666, 0.6666666666666666, \
           0.6666666666666666, 0.6]
-
-# ASCII encoding constants
-OOK_BFSK_PRE_POST_SYNC = '1010101'
-MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
 
 # ASCII test data
 A_TEST_ON = [16.398103329009942, 1.4331675673728201, 1.1998612191958495, 
@@ -167,8 +171,42 @@ def ook_manchester_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
 
 def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
+    desription:
+        demodulates a list of durations with BFSK into a bitstring
+    parameters:
+        dur_on  -> the list of times light was on
+        dur_off -> the list of times the light was off
+        lff     -> if the light was on first frame
+    returns:
+        the demodulated bit string
     """
-    return
+    # init some stuff
+    idx_on = 1
+    idx_off = 1
+    ldon = len( dur_on )
+    ldoff = len( dur_off )
+    on = 0
+    bitstring = ''
+
+    while( True ):
+        # check if still looping
+        if( idx_on >= ldon  ):
+            break
+
+        # get duration on
+        on = dur_on[idx_on]
+
+        # calculate distances from 1 second to 2 second
+        dist_zero = abs( BFSK_ONE - on )
+        dist_one  = abs( BFSK_ZERO - on )
+
+        # classify
+        if( min( dist_zero, dist_one ) == dist_zero ):
+            bitstring += '0'
+        else:
+            bitstring += '1'
+
+    return bitstring
 
 def ook_bfsk_decode( bitstring:str ) -> str:
     """
