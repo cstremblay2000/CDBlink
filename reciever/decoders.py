@@ -165,6 +165,11 @@ def ook_manchester_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         
     return bitstring
 
+def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
+    """
+    """
+    return
+
 def ook_bfsk_decode( bitstring:str ) -> str:
     """
     description:
