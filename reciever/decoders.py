@@ -68,13 +68,13 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
 
     # classify bits on 
     for dur in dur_on[2:]:
-        num_bits = round( dur*calibration_blink )
+        num_bits = round( dur/calibration_blink )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_on.append( '1'*num_bits )
 
     for dur in dur_off[3:]:
-        num_bits = round( dur*calibration_blink )
+        num_bits = round( dur/calibration_blink )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_off.append( '0'*num_bits )
@@ -314,15 +314,25 @@ def main():
     print()
 
     # decode ascii
-    print( "ascii test" )
-    print( "\t", "ook test, expecting hello" )
+    print( "ascii test, expecting hello" )
+    print( "\t", "ook test one second" )
     bs = ook_demodulate( td.OOK_HELLO_ONE_S_ON, 
                          td.OOK_HELLO_ONE_S_OFF, False )
     print( "\t","demodulated", len( bs ), "bits" , bs )
-
     msg = ook_bfsk_decode( bs )
     print( "\t", "decoded", msg )
     print()
+
+
+    print( "ascii test, expecting hello" )
+    print( "\t", "ook test half second" )
+    bs = ook_demodulate( td.OOK_HELLO_HALF_S_ON,
+                         td.OOK_HELLO_HALF_S_OFF, False )
+    print( "\t","demodulated", len( bs ), "bits" , bs )
+    msg = ook_bfsk_decode( bs )
+    print( "\t", "decoded", msg )
+    print()
+
 
     print( "\t", "bfsk test, expecting abc" )
     print( "\t", "not implemented yet" )
