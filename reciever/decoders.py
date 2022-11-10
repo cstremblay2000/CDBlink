@@ -275,7 +275,7 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
             msg += MORSE_DICT[buffer]
             buffer = dot_dash
         if( space == SPACES.WORD ):
-            msg += MORSE_DICT[buffer]
+            msg += ' ' + MORSE_DICT[buffer]
             buffer = dot_dash
 
     if( buffer != "" and buffer in MORSE_DICT.keys() ):
