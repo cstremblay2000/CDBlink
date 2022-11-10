@@ -22,11 +22,8 @@ for.
 The idea to use this program is to crop out a small rectangle around the light
 being observed. This means that the user should know the coordinates of the
 top left corner, width, and height of the bounding rectangle to isolate the
-light. This can easily be found by changing the constant
-`LOGGING_LEVEL=logging.DEBUG` near the top of the `receiver.py` file and 
-using the OpenCV window to get the relevant coordinates. Changing
-`LOGGING_LEVEL=logging.INFO` will just run the script regularly without any
-debug functionality.  
+light. This can easily be found by adding the `-d` flag. This will bring up the 
+native OpenCV image windows where the user can view the coordinates of the pixes. 
 
 ### Dependencies
 - [Python3](https://www.python.org/downloads/)
@@ -35,7 +32,6 @@ debug functionality.
 
 ### How to run
 - To run the program use `python3 receiver.py [filename]`
-- To see an example checkout `receiver/test_mp4.sh` 
 
 ### Usage message
 ```
