@@ -124,40 +124,29 @@ def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         the demodulated bit string
     """
     # init some stuff
-    idx_on = -1
-    idx_off = -1
+    idx_on = 2
     ldon = len( dur_on )
-    ldoff = len( dur_off )
     on = 0
     bitstring = ''
-    calibration_blink = -1
+    calibration_blink = dur_on[1]
     while( True ):
         # check if we should still be looping
-        idx_on += 1
-        idx_off += 1
-        if( idx_on >= ldon and idx_off >= ldoff ):
+        if( idx_on >= ldon ):
             break
-        # skip start up
-        if( dur[idx_on] > SPIN_UP_TIME_THRESH or idx_on == 0 ):
-            continue
-
-        # get calibration blink
-        if( idx_on == 1 ):
-            calibration_blink = dur_on[idx_on]
-            continue
 
         # get duration on
         on = dur_on[idx_on]
 
         # calculate distances from 1 second to 2 second
-        dist_zero = abs( on - BFSK_ONE*calibration_blink )
-        dist_one  = abs( on - BFSK_ZERO*calibration_blink )
+        dist_zero = abs( on/calibration_blink - BFSK_ZERO )
+        dist_one  = abs( on/calibration_blink - BFSK_ONE )
 
         # classify
         if( min( dist_zero, dist_one ) == dist_zero ):
             bitstring += '0'
         else:
             bitstring += '1'
+        idx_on += 1
 
     return bitstring
 
@@ -334,8 +323,21 @@ def main():
     print()
 
 
-    print( "\t", "bfsk test, expecting abc" )
-    print( "\t", "not implemented yet" )
+    print( "\t", "bfsk one second test" )
+    bs = bfsk_demodulate( td.BFSK_HELLO_ONE_S_ON,
+                         td.BFSK_HELLO_ONE_S_OFF, False )
+    print( "\t","demodulated", len( bs ), "bits" , bs )
+    msg = ook_bfsk_decode( bs )
+    print( "\t", "decoded", msg )
+    print()
+
+    print( "\t", "bfsk test half second" )
+    bs = bfsk_demodulate( td.BFSK_HELLO_HALF_S_ON,
+                          td.BFSK_HELLO_HALF_S_OFF, False )
+    print( "\t","demodulated", len( bs ), "bits" , bs )
+    msg = ook_bfsk_decode( bs )
+    print( "\t", "decoded", msg )
+
     print( "done" )
     return
 
