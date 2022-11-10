@@ -26,7 +26,7 @@ MORSE_HELLO_ONE_S_OFF = [0.8,1,1,
 
 # morse test 
 # this was created by hand so it is idea
-MORSE_HELLO_HALF_S_ON  = [22,0.5,            # start up cylce and calibration
+MORSE_HELLO_HALF_S_ON  = [22,0.5,           # start up cylce and calibration
                          0.4,0.4,0.5,0.5,   # h
                          0.5,               # e
                          0.5,1.6,0.45,0.45, # l
@@ -39,3 +39,9 @@ MORSE_HELLO_HALF_S_OFF = [0.8,0.5,0.5,
                          0.5,0.5,0.5,1.5,
                          0.5,0.5,0.5,1.5,
                          0.5,0.5,1.5]
+
+# ook test 
+# created by hand so it is ideal
+OOK_HELLO_ONE_S_ON  = [22,1,2,1,2,1,3,2,2,2,2,4] 
+ 
+OOK_HELLO_ONE_S_OFF = [0.8,1,1,1,3,2,1,1,2,1,2,1]

@@ -15,7 +15,6 @@ from enum import Enum
 
 # shared constants
 SPIN_UP_TIME_THRESH     = 10 # seconds
-OOK_ADJUSTMENT          = 1.2 # seconds per blink, should be one, but oh well
 
 # Morse time constants
 MORSE_DOT           = 1 
@@ -64,22 +63,25 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     bitstring_off = list()
     bitstring = ''
 
+    # get calibration blink
+    calibration_blink = dur_on[1]
+
     # classify bits on 
-    for dur in dur_on:
-        num_bits = round( dur/OOK_ADJUSTMENT ) # actual time is ~1.2-1.5s
+    for dur in dur_on[2:]:
+        num_bits = round( dur*calibration_blink )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_on.append( '1'*num_bits )
 
-    for dur in dur_off:
-        num_bits = round( dur )
+    for dur in dur_off[3:]:
+        num_bits = round( dur*calibration_blink )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_off.append( '0'*num_bits )
 
     # join bit string, start at one to skip spin up time
-    idx_on = 1
-    idx_off = 1
+    idx_on = 0
+    idx_off = 0
     on = ''
     off = ''
     ldon = len( bitstring_on )
@@ -93,18 +95,16 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         if( idx_on < ldon ):
             on = bitstring_on[idx_on]
             idx_on += 1
+        else:
+            on = ""
         if( idx_off < ldoff ):
-            if( idx_off == 1 ):
-                off = '' # skip 5s wait
-            else:
-                off = bitstring_off[idx_off]
+            off = bitstring_off[idx_off]
             idx_off += 1
+        else:
+            off = ""
 
         # assemble bitstring in corret order if light was on first
-        if( lff ):
-            bitstring += on + off
-        else:
-            bitstring += off + on
+        bitstring += on + off
         
     return bitstring
 
@@ -119,28 +119,39 @@ def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         dur_on  -> the list of times light was on
         dur_off -> the list of times the light was off
         lff     -> if the light was on first frame
+        cb      -> the calibration blink
     returns:
         the demodulated bit string
     """
     # init some stuff
-    idx_on = 1
-    idx_off = 1
+    idx_on = -1
+    idx_off = -1
     ldon = len( dur_on )
     ldoff = len( dur_off )
     on = 0
     bitstring = ''
-
+    calibration_blink = -1
     while( True ):
-        # check if still looping
-        if( idx_on >= ldon  ):
+        # check if we should still be looping
+        idx_on += 1
+        idx_off += 1
+        if( idx_on >= ldon and idx_off >= ldoff ):
             break
+        # skip start up
+        if( dur[idx_on] > SPIN_UP_TIME_THRESH or idx_on == 0 ):
+            continue
+
+        # get calibration blink
+        if( idx_on == 1 ):
+            calibration_blink = dur_on[idx_on]
+            continue
 
         # get duration on
         on = dur_on[idx_on]
 
         # calculate distances from 1 second to 2 second
-        dist_zero = abs( BFSK_ONE - on )
-        dist_one  = abs( BFSK_ZERO - on )
+        dist_zero = abs( on - BFSK_ONE*calibration_blink )
+        dist_one  = abs( on - BFSK_ZERO*calibration_blink )
 
         # classify
         if( min( dist_zero, dist_one ) == dist_zero ):
@@ -166,10 +177,7 @@ def ook_bfsk_decode( bitstring:str ) -> str:
     # decode message
     msg = ""
     for ss in substrings:
-        if( ss == OOK_BFSK_PRE_POST_SYNC ):
-            continue
-        else:
-            msg += chr( int( ss, 2 ) ) 
+        msg += chr( int( ss, 2 ) ) 
     return msg
 
 def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
@@ -308,11 +316,12 @@ def main():
     # decode ascii
     print( "ascii test" )
     print( "\t", "ook test, expecting hello" )
-#bs = ook_demodulate( td.A_TEST_ON_1, td.A_TEST_OFF_1, False )
-#print( "\t","demodulated", len( bs ), "bits" , bs )
+    bs = ook_demodulate( td.OOK_HELLO_ONE_S_ON, 
+                         td.OOK_HELLO_ONE_S_OFF, False )
+    print( "\t","demodulated", len( bs ), "bits" , bs )
 
-#msg = ook_bfsk_decode( bs )
-#print( "\t", "decoded", msg )
+    msg = ook_bfsk_decode( bs )
+    print( "\t", "decoded", msg )
     print()
 
     print( "\t", "bfsk test, expecting abc" )
