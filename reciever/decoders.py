@@ -47,11 +47,11 @@ MORSE_DICT = {'01': 'a', '1000': 'b', '1010': 'c', '100': 'd', '0': 'e',
 def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
     description:
-        demodulates a list of durations into a bitstring
-        using on-off-keying (ook) 
-        note, the time that a light is on might not actually be closer
-        to 1.2-1.5 seconds when it should be one. there is a compensation
-        mechanism in the for first for loop that accomodats for that
+        Demodulats on-on-keying based on durations provided by user.
+        It is structed by having one large blink to ensure that the disk is
+        spun up. then a calibration blink is sent so that the decoder
+        knows how long a blink is going to be. that caliration blink
+        will be used to know how long something is on/off
     parameters:
         dur_on  -> the list of durations the light is on for
         dur_off -> the list of durations the light is off for
@@ -111,7 +111,10 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
 def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
     desription:
-        demodulates a list of durations with BFSK into a bitstring
+        demodulates a binary frequency shift keying modulated message.
+        The first blink is very long and ensures that the the drive is spun up
+        Then a calibration link is sent to get how long a zero duration is for.
+        The time will be double for a one. 
     parameters:
         dur_on  -> the list of times light was on
         dur_off -> the list of times the light was off
@@ -230,10 +233,15 @@ def classify_morse_space( duration:int ) -> Enum:
 def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     """
     description:
-        decodes morse code where:
-        - a DOT is about 1-1.5s
-        - a DASH is about 3s
-        - and time between DOTS or DASHES is about a second
+        A long blink is first sent to ensure that the drive is spun up.
+        Then a calibration blink is sent to represent one unit for morse
+
+        the morse will then be decoded where:
+            - a DOT is ONE unit
+            - a DASH is THREE units
+            - SPACE between SIGNALS is ONE unit
+            - SPACE between LETTERS is THREE units
+            - SPACE between WORDS is 7 UNITS
     parameters:
         dur_on  -> the list of times where durations of light on
         dur_off -> the list of times where the lights are off
