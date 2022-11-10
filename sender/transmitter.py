@@ -2,6 +2,10 @@ from argparse import ArgumentParser
 from time import sleep
 from subprocess import run
 
+# Global variables for read lengths
+short = '500'
+long = '1000'
+
 
 # Convert message to morse code
 def morse_encode(msg):
@@ -27,41 +31,25 @@ def morse_encode(msg):
     for c in msg:
         code.append(morse_dict[c])
 
+    # Add sync/calibration signal
+    code = '0000' + code + '0000'
+
     return code
 
 
 # Encode to binary string for ook and bsfk encoding schemes
-def ook_bfsk_encode(msg):
+def ook_bfsk_encode(msg, codec):
     code = ''
 
     # Convert input to 7-bit binary
     for char in msg:
         code += str(char.join(format(ord(x), '07b') for x in char))
 
-    # Add sync signals
-    code = '1010101' + code + '1010101'
-
-    return code
-
-
-# Encode to manchester
-def manchester_encode(msg):
-    bit_string =''
-    code = ''
-
-    # Convert input to 7-bit binary
-    for char in msg:
-        bit_string += str(char.join(format(ord(x), '07b') for x in char))
-
-    # Convert bit string to manchester scheme
-    for bit in bit_string:
-        if bit == '0':
-            code += '01'
-        else:
-            code += '10'
-    
-    # Add sync signals
-    code = '1001100110011001100110011001' + code + '1001100110011001100110011001'
+    # Add sync/calibration signals
+    if codec == 2:
+        code = '1010101' + code + '1010101'
+    else:
+        code = '0000' + code + '0000'
 
     return code
 
@@ -70,8 +58,9 @@ def manchester_encode(msg):
 def morse_transmit(code):
     log = []
 
-    # Sync signal/spin up the disk drive
-    out = run('dd if=/dev/sr0 of=/dev/null count=15 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+    # Spin up the disk drive
+    out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     # Save output of dd for log
     log.append(out.stderr.decode().split('\n',2)[2])
     sleep(3)
@@ -82,12 +71,14 @@ def morse_transmit(code):
         for signal in character:
             if signal == '0':
                 # Transmit dot   
-                out = run('dd if=/dev/sr0 of=/dev/null count=1 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             else:
                 # Transmit dash
-                out = run('dd if=/dev/sr0 of=/dev/null count=3 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + long, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one second between signals
@@ -95,10 +86,6 @@ def morse_transmit(code):
             
         # Sleep a total of 3 seconds after finishing a character
         sleep(2)
-    
-    # Sync signal, message done
-    out = run('dd if=/dev/sr0 of=/dev/null count=15 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
-    log.append(out.stderr.decode().split('\n',2)[2])
 
     # Write output of dd commands to a log file
     f = open('./log.txt', 'w')
@@ -107,12 +94,13 @@ def morse_transmit(code):
     f.close()
 
 
-# Transmit function for ook and manchester encoding
-def ook_manchester_transmit(code):
+# Transmit function for ook encoding
+def ook_transmit(code):
     log = []
 
     # Spin up disk drive
-    out = run('dd if=/dev/sr0 of=/dev/null count=15 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+    out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
+         'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     log.append(out.stderr.decode().split('\n',2)[2])
     sleep(5)
 
@@ -121,7 +109,8 @@ def ook_manchester_transmit(code):
         if bit == '0':
             sleep(1)
         else:
-            out = run('dd if=/dev/sr0 of=/dev/null count=1 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
 
     f = open('./log.txt', 'w')
@@ -135,17 +124,20 @@ def bsfk_transmit(code):
     log = []
 
     # Spin up the disk drive
-    out = run('dd if=/dev/sr0 of=/dev/null count=15 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+    out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
+         'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     log.append(out.stderr.decode().split('\n',2)[2])
     sleep(5)
 
     # Read for 1 sec for 0, 2 for 1
     for bit in code:
         if bit == '0':
-            out = run('dd if=/dev/sr0 of=/dev/null count=1 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
         else:
-            out = run('dd if=/dev/sr0 of=/dev/null count=3 iflag=nocache oflag=nocache,dsync bs=1M ', shell=True, capture_output=True)
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + long, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
   
         # Sleep one second between signals
@@ -164,11 +156,18 @@ def main():
     # Create and parse command line arguments
     parser = ArgumentParser(description='CD-Blink Encoding and Transmission')
     parser.add_argument('-c', '--codec', type=int, required=False, help='Encoding Scheme:\
-        1 = Morse(Alphanumeric Only) 2 = On-Off-Keying 3 = Manchester 4 = Binary Frequency Shift Keying')
+        1 = Morse(Alphanumeric Only) 2 = On-Off-Keying 3 = Binary Frequency Shift Keying')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-m', '--msg', type=str, required=False, help='Message to transmit')
     group.add_argument('-f', '--file', type=str, required=False, help='File to read message from')
+    parser.add_argument('-s', '--sblk', type=str, required=False, help='Length in KB of short read')
+    parser.add_argument('-l', '--lblk', type=str, required=False, help='Length in KB of long read')
     args = parser.parse_args()
+
+    if args.sblk:
+        short = args.sblk
+    if args.lblk:
+        long = args.lblk
 
     # Set message to transmit
     if args.msg:
@@ -191,8 +190,7 @@ def main():
         print('Choose Encoding Scheme')
         print('1 = Morse (Alphanumeric Only)')
         print('2 = On-Off-Keying')
-        print('3 = Manchester')
-        print('4 = Binary Frequency Shift Keying')
+        print('3 = Binary Frequency Shift Keying')
         encoding_choice = int(input(':'))
 
     # Encode and transmit using scheme users chose
@@ -200,13 +198,10 @@ def main():
         code = morse_encode(msg)
         morse_transmit(code)
     elif encoding_choice == 2:
-        code = ook_bfsk_encode(msg)
-        ook_manchester_transmit(code)
-    elif encoding_choice == 3:
-        code = manchester_encode(msg)
-        ook_manchester_transmit(code)
+        code = ook_bfsk_encode(msg, 2)
+        ook_transmit(code)
     else:
-        code = ook_bfsk_encode(msg)
+        code = ook_bfsk_encode(msg, 3)
         bsfk_transmit(code)
 
     print('Complete')
