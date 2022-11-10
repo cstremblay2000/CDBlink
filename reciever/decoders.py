@@ -5,6 +5,9 @@ author:     Chris Tremblay <cst1465@rit.edu>
 date:       11/01/2022, National Cook For Your Pets Day!
 description:
     Decodes the results from receiver.py in either morse or ascii
+    The reciever is designed to have one large blink at the beginning
+    and then a calibration blink right after that lets the the decoder know
+    how long the blink are going to be
 """
 
 from enum import Enum
