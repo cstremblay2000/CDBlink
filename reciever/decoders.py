@@ -14,22 +14,22 @@ description:
 from enum import Enum
 
 # shared constants
-SPIN_UP_TIME_THRESH = 10
-OOK_ADJUSTMENT = 1.2 # seconds per blink, should be one, but oh well
+SPIN_UP_TIME_THRESH     = 10 # seconds
+OOK_ADJUSTMENT          = 1.2 # seconds per blink, should be one, but oh well
 
 # Morse time constants
-MORSE_DOT           = 1 # second
-MORSE_DASH          = 3 # seconds
-MORSE_SPACE_SIGNAL  = 1 # seconds
-MORSE_SPACE_LETTER  = 3 # seconds
-MORSE_SPACE_WORD    = 7 # seconds
+MORSE_DOT           = 1 
+MORSE_DASH          = 3 
+MORSE_SPACE_SIGNAL  = 1
+MORSE_SPACE_LETTER  = 3 
+MORSE_SPACE_WORD    = 7
 
 # ASCII encoding constants
 OOK_BFSK_PRE_POST_SYNC = '1010101'
 
 # bfsk constants
-BFSK_ZERO   = 1 # seconds
-BFSK_ONE    = 2 # seconds
+BFSK_ZERO   = 1
+BFSK_ONE    = 2 
 
 # Enums
 SPACES = Enum( 'MorseSpaces', ['SIGNAL','LETTER', 'WORD' ] )
