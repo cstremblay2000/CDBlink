@@ -178,19 +178,20 @@ def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
     # TODO
     return ""
 
-def classify_morse_dot_dash( duration:int ) -> chr:
+def classify_morse_dot_dash( duration:int, cb:float ) -> chr:
     """
     description:
         classfies whether a duraction on is a dot or dash
     parameters:
         duration -> the duration light is on
+        cb       -> the calibration blink
     returns:
         '0' -> character zero if a dot
         '1' -> character one if a dash
     """
     # get distances
-    dist_dot  = abs( duration - MORSE_DOT )
-    dist_dash = abs( duration - MORSE_DASH )
+    dist_dot  = abs( duration - MORSE_DOT*cb )
+    dist_dash = abs( duration - MORSE_DASH*cb )
 
     # classify
     min_dist = min( dist_dot, dist_dash )
@@ -201,22 +202,23 @@ def classify_morse_dot_dash( duration:int ) -> chr:
         return '1'
     return None
 
-def classify_morse_space( duration:int ) -> Enum:
+def classify_morse_space( duration:int, cb:float ) -> Enum:
     """
     description:
         classifies the duration the time was off to determin
         whether a word, letter, or dot/dash is being deliniated
     paraemeters:
         duraction -> the duration the light was off for
+        cb        -> the calibration blink
     returns:
         SPACES.SIGNAL -> if space between signals
         SPACES.LETTER -> if space between letters
         SPACES.WORD   -> if space between words
     """
     # get distances 
-    sig_dist = abs( duration - MORSE_SPACE_SIGNAL )
-    let_dist = abs( duration - MORSE_SPACE_LETTER )
-    wor_dist = abs( duration - MORSE_SPACE_WORD   )
+    sig_dist = abs( duration - MORSE_SPACE_SIGNAL*cb )
+    let_dist = abs( duration - MORSE_SPACE_LETTER*cb )
+    wor_dist = abs( duration - MORSE_SPACE_WORD*cb   )
 
     # calc min distance
     min_dist = min( sig_dist, let_dist, wor_dist )
@@ -252,16 +254,22 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     # start decoding
     msg = "" 
     buffer = ""
+    calibration_blink = -1
     for i in range( 1, max( len( dur_on ), len( dur_off ) ) ):
         # for sync messages, probably a better way to do this but oh well
         if( dur_on[i] > SPIN_UP_TIME_THRESH ):
             continue 
 
+        # read the calibration blink
+        if( i == 2 ):
+            calibration_blink = dur_on[i]
+            continue
+
         # calculate distances of the duration on to dot or dash
-        dot_dash = classify_morse_dot_dash( dur_on[i] )
+        dot_dash = classify_morse_dot_dash( dur_on[i], calibration_blink )
 
         # classify space
-        space = classify_morse_space( dur_off[i] )
+        space = classify_morse_space( dur_off[i], calibration_blink )
 
         # check if light on was first frame or not
         if( space == SPACES.SIGNAL or buffer == "" ):
@@ -287,20 +295,24 @@ def main():
     import test_data as td
 
     # decode morse
-    print( "morse test" )
-    msg = decode_morse( td.TEST_ON, td.TEST_OFF, False )
-    print( "\t", msg )
+    print( "morse test, expecting result: hello" )
+    msg = decode_morse( td.MORSE_HELLO_ONE_S_ON, 
+                        td.MORSE_HELLO_ONE_S_OFF, False )
+    print( "\t", "ideal one second test result:", msg )
+    msg = decode_morse( td.MORSE_HELLO_HALF_S_ON,
+                        td.MORSE_HELLO_HALF_S_OFF, False )
+    print( "\t", "ideal half second test result:", msg )
     print( "done" )
     print()
 
     # decode ascii
     print( "ascii test" )
     print( "\t", "ook test, expecting hello" )
-    bs = ook_demodulate( td.A_TEST_ON_1, td.A_TEST_OFF_1, False )
-    print( "\t","demodulated", len( bs ), "bits" , bs )
+#bs = ook_demodulate( td.A_TEST_ON_1, td.A_TEST_OFF_1, False )
+#print( "\t","demodulated", len( bs ), "bits" , bs )
 
-    msg = ook_bfsk_decode( bs )
-    print( "\t", "decoded", msg )
+#msg = ook_bfsk_decode( bs )
+#print( "\t", "decoded", msg )
     print()
 
     print( "\t", "bfsk test, expecting abc" )
