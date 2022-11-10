@@ -22,7 +22,6 @@ MORSE_SPACE_WORD    = 7 # seconds
 
 # ASCII encoding constants
 OOK_BFSK_PRE_POST_SYNC = '1010101'
-MANCHESTER_DECODE_SYNC = '1001100110011001100110011001'
 
 # bfsk constants
 BFSK_ZERO   = 1 # seconds
@@ -80,36 +79,11 @@ A_TEST_OFF_1 = [1.8666666666666667, 4.766666666666667, 0.6666666666666666,
                 1.6666666666666667, 0.6666666666666666, 0.6666666666666666, 
                 0.6666666666666666, 0.6666666666666666]
 
-#manchester encoding test data
-A_TEST_ON_2 = [15.333333333333334, 3.033333333333333, 1.5666666666666667, 
-               3.1333333333333333, 1.5666666666666667, 3.066666666666667, 
-               1.6, 3.1, 3.1333333333333333, 3.1333333333333333, 
-               1.5666666666666667, 1.5333333333333334, 1.5666666666666667, 
-               1.5666666666666667, 3.066666666666667, 3.1, 3.1333333333333333, 
-               1.6, 1.5, 1.5666666666666667, 3.1, 1.5666666666666667, 3.1, 
-               3.1333333333333333, 1.5666666666666667, 1.5666666666666667, 
-               1.5333333333333334, 3.066666666666667, 3.1333333333333333, 
-               3.1333333333333333, 1.5666666666666667, 3.1, 1.6, 
-               3.066666666666667, 1.5666666666666667, 3.1333333333333333]
-
-A_TEST_OFF_2 = [0.7666666666666667, 4.733333333333333, 0.6666666666666666, 
-                0.6333333333333333, 0.6333333333333333, 0.6666666666666666, 
-                0.6666666666666666, 0.6333333333333333, 0.6333333333333333, 
-                0.6666666666666666, 0.6333333333333333, 0.6666666666666666, 
-                0.6666666666666666, 0.6333333333333333, 0.6666666666666666, 
-                0.6666666666666666, 0.6333333333333333, 0.6333333333333333, 
-                0.6666666666666666, 0.6666666666666666, 0.6666666666666666, 
-                0.6333333333333333, 0.6666666666666666, 0.6333333333333333, 
-                0.6666666666666666, 0.6333333333333333, 0.6666666666666666, 
-                0.6666666666666666, 0.6666666666666666, 0.6333333333333333, 
-                0.6666666666666666, 0.6666666666666666, 0.6333333333333333, 
-                0.6666666666666666, 0.6666666666666666, 0.6333333333333333]
-
-def ook_manchester_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
+def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     """
     description:
         demodulates a list of durations into a bitstring
-        using on-off-keying (ook) or manchester encoding
+        using on-off-keying (ook) 
         note, the time that a light is on might not actually be closer
         to 1.2-1.5 seconds when it should be one. there is a compensation
         mechanism in the for first for loop that accomodats for that
@@ -230,25 +204,6 @@ def ook_bfsk_decode( bitstring:str ) -> str:
             msg += chr( int( ss, 2 ) ) 
     return msg
 
-def manchester_decode( bitstring:str ) -> str:
-    """
-    description:
-        decodes a string that uses machester encoding
-        01 encodes a 0 
-        10 encodes a 1
-    parameters:
-        bitstring -> the bit string that needs to be decoded
-    returns:
-        the decoded message
-    """
-    msg = ""
-
-    substrings = bitstring.split( MANCHESTER_DECODE_SYNC )
-    print()
-    for ss in substrings:
-        print( ss )
-    return ""
-
 def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
     """
     """
@@ -364,18 +319,10 @@ def main():
     # decode ascii
     print( "ascii test" )
     print( "\t", "ook test, expecting hello" )
-    bs = ook_manchester_demodulate( A_TEST_ON_1, A_TEST_OFF_1, False )
+    bs = ook_demodulate( A_TEST_ON_1, A_TEST_OFF_1, False )
     print( "\t","demodulated", len( bs ), "bits" , bs )
 
     msg = ook_bfsk_decode( bs )
-    print( "\t", "decoded", msg )
-    print()
-
-    print( "\t", "manchester test, expecting abc" )
-    bs = ook_manchester_demodulate( A_TEST_ON_2, A_TEST_OFF_1, False )
-    print( "\t", "demodulate", len( bs ), "bits", bs )
-
-    msg = manchester_decode( bs )
     print( "\t", "decoded", msg )
     print()
 
