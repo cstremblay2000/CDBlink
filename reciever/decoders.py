@@ -15,7 +15,7 @@ from enum import Enum
 
 # shared constants
 SPIN_UP_TIME_THRESH = 10
-OOK_MANCH_ADJUSTMENT = 1.2 # seconds per blink, should be one, but oh well
+OOK_ADJUSTMENT = 1.2 # seconds per blink, should be one, but oh well
 
 # Morse time constants
 MORSE_DOT           = 1 # second
@@ -66,7 +66,7 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
 
     # classify bits on 
     for dur in dur_on:
-        num_bits = round( dur/OOK_MANCH_ADJUSTMENT ) # actual time is ~1.2-1.5s
+        num_bits = round( dur/OOK_ADJUSTMENT ) # actual time is ~1.2-1.5s
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_on.append( '1'*num_bits )
