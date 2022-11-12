@@ -25,14 +25,14 @@ def morse_encode(msg):
                 'y': '1011', 'z': '1100', '0': '11111', '1': '01111', '2': '00111', '3': 
                 '00011', '4': '00001', '5': '00000', '6': '10000', '7': '11000', '8': '11100', '9': '11110'}
 
-    code = []
+    code = ['0000']
 
     # Convert each char to morse using dictionary
     for c in msg:
         code.append(morse_dict[c])
 
     # Add sync/calibration signal
-    code = '0000' + code + '0000'
+    code.append('0000')
 
     return code
 
