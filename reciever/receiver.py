@@ -41,8 +41,9 @@ def parse_cli_args():
     parser = argparse.ArgumentParser( description="decode a message from " +
             "flashing lights" )
     parser.add_argument( '-e', '--encoding', \
-                         choices=['morse', 'ascii'],\
-                         help="encoding for recieved message, default morse" )
+                         choices=['morse', 'bfsk','ook'],\
+                         help="morse, binary frequency shift keying, " +
+                               " on-off keying. Default morse" )
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', nargs=4, \
                          metavar='N', type=int, \
@@ -145,6 +146,9 @@ def main():
         # crop image if specified by cli
         if( CROP ):
             frame = frame[Y:Y+DY,X:X+DX]
+            cv.imshow( NAMED_WINDOW, frame )
+            cv.waitKey()
+            print( "cropped" )
 
         # keep track of frames for debugging
         logging.debug( "frame: %d" % frame_total )
@@ -162,7 +166,10 @@ def main():
         # | 1 1 1 | X -
         # | 1 1 1 |   9
         blur = cv.GaussianBlur( frame, (5,5), 0 )
-        
+        cv.imshow( NAMED_WINDOW, frame )
+        cv.waitKey() 
+        print( "blurred" )
+
         # pull out channel if specified
         channel = None
         if( CHANNEL[0] != 'n' ):
@@ -175,10 +182,18 @@ def main():
                 channel = b
         else: # grayscale channel to threshold it to binary later
             channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
+
+        cv.imshow( NAMED_WINDOW, channel )
+        cv.waitKey()
+        print( "grayscaled" )
          
         # binarize image, turn black and white
         # use green channel since lights used for testing are green
         ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
+        
+        cv.imshow( NAMED_WINDOW, binarized )
+        cv.waitKey()
+        print( "binarized" )
 
         # check if light on 
         if( light_on( binarized ) ):
