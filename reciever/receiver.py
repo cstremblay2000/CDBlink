@@ -46,7 +46,8 @@ def parse_cli_args():
     parser.add_argument( '-e', '--encoding', \
                          choices=['morse', 'bfsk','ook'],\
                          help="morse, binary frequency shift keying, " +
-                               " on-off keying. Default morse" )
+                               " on-off keying. Default morse",
+                         default='morse' )
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', nargs=4, \
                          metavar='N', type=int, \
@@ -75,10 +76,12 @@ def parse_cli_args():
     # process arguments and populate relevant flags
     parsed      = parser.parse_args() 
     ENCODING    = parsed.encoding
-    if( ENCODING == "ascii" ):
-        DECODER = decoders.decode_ascii
-    else:
+    if( ENCODING == 'morse' ):
         DECODER = decoders.decode_morse
+    elif( ENCODING == 'bfsk' ):
+        DECODR = decoders.bfsk_decode
+    elif( ENCODING == 'ook' ):
+        DECODER = decoders.ook_decode
     FILEPATH    = parsed.filepath
     if( parsed.crop != None ):
         CROP    = True
@@ -119,6 +122,7 @@ def main():
     # open video 
     if( FILEPATH.isnumeric() ):
         cap = cv.VideoCapture( int(FILEPATH) )
+        logging.info( "detected device, press Ctrl-C to exit when done" )
     else:
         cap = cv.VideoCapture( FILEPATH )
     logging.debug( "Opening file '%s'" % FILEPATH )
@@ -143,92 +147,93 @@ def main():
     frames_off              = 0
     on_list                 = list()
     off_list                = list()
-    LIGHT_ON_FIRST_FRAME    = False
 
     while( cap.isOpened() ):
-        # get frame and check that it exists
-        ret, frame = cap.read()
-        orig = frame.copy()
-        if( not ret ):
+        try:
+            # get frame and check that it exists
+            ret, frame = cap.read()
+            orig = frame.copy()
+            if( not ret ):
+                break
+
+            # crop image if specified by cli
+            if( CROP ):
+                frame = frame[Y:Y+DY,X:X+DX]
+                cv.rectangle( orig, (X,Y), (X+DX,Y+DY), (0,0,255), 5 )
+
+            # show orignal with rectangle around cropped area
+            if( logging.root.level <= logging.DEBUG ):
+                cv.imshow( NW_ORIG, orig )
+                cv.imshow( NW_CROP, frame )
+
+            # keep track of frames for debugging
+            logging.debug( "frame: %d" % frame_total )
+
+            # blur image and split into 3 color channels
+            # a 5x5 gaussian filter
+            # | 1  4  7  4  1 |
+            # | 4 16 26 16  4 |    1
+            # | 7 26 41 26  7 | X ---
+            # | 4 16 26 16  4 |   273
+            # | 1  4  7  4  1 |
+            #
+            # a 3x3 mean filter
+            # | 1 1 1 |   1
+            # | 1 1 1 | X -
+            # | 1 1 1 |   9
+            blur = cv.GaussianBlur( frame, (5,5), 0 )
+            if( logging.root.level <= logging.DEBUG ):
+                cv.imshow( NW_BLUR, frame )
+
+            # pull out channel if specified
+            channel = None
+            if( CHANNEL[0] != 'n' ):
+                b,g,r   = cv.split( frame )
+                if( CHANNEL == 'r' ):
+                    channel = r
+                elif( CHANNEL == 'g' ):
+                    channel = g
+                elif( CHANNEL == 'b' ):
+                    channel = b
+            else: # grayscale channel to threshold it to binary later
+                channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
+
+            if( logging.root.level <= logging.DEBUG ):
+                cv.imshow( NW_GRAY, channel )
+
+            # binarize image, turn black and white
+            # use green channel since lights used for testing are green
+            ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
+            if( logging.root.level <= logging.DEBUG ):
+                cv.imshow( NW_BIN, binarized )
+
+            # check if light on 
+            if( light_on( binarized ) ):
+                if( not light_is_on ):
+                    logging.debug( "light turned on" )
+                    off_list.append( frames_off )
+                    frames_off = 0
+
+                frames_on += 1
+                light_is_on = True
+            else:
+                if( light_is_on ):
+                    logging.debug( "light turned off" )
+                    light_is_on = False
+                    on_list.append( frames_on )
+                    frames_on = 0
+                frames_off += 1
+
+            # exit
+            if( cv.waitKey(1) & 0xFF == ord('q') ):
+                break
+            frame_total += 1
+        except KeyboardInterrupt:
             break
 
-        # crop image if specified by cli
-        if( CROP ):
-            frame = frame[Y:Y+DY,X:X+DX]
-            cv.imshow( NW_CROP, frame )
-            cv.rectangle( orig, (X,Y), (X+DX,Y+DY), (0,0,255), 5 )
-
-        # show orignal with rectangle around cropped area
-        if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NW_ORIG, orig )
-
-        # keep track of frames for debugging
-        logging.debug( "frame: %d" % frame_total )
-
-        # blur image and split into 3 color channels
-        # a 5x5 gaussian filter
-        # | 1  4  7  4  1 |
-        # | 4 16 26 16  4 |    1
-        # | 7 26 41 26  7 | X ---
-        # | 4 16 26 16  4 |   273
-        # | 1  4  7  4  1 |
-        #
-        # a 3x3 mean filter
-        # | 1 1 1 |   1
-        # | 1 1 1 | X -
-        # | 1 1 1 |   9
-        blur = cv.GaussianBlur( frame, (5,5), 0 )
-        cv.imshow( NW_BLUR, frame )
-
-        # pull out channel if specified
-        channel = None
-        if( CHANNEL[0] != 'n' ):
-            b,g,r   = cv.split( frame )
-            if( CHANNEL == 'r' ):
-                channel = r
-            elif( CHANNEL == 'g' ):
-                channel = g
-            elif( CHANNEL == 'b' ):
-                channel = b
-        else: # grayscale channel to threshold it to binary later
-            channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
-
-        cv.imshow( NW_GRAY, channel )
-         
-        # binarize image, turn black and white
-        # use green channel since lights used for testing are green
-        ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
-        
-        cv.imshow( NW_BIN, binarized )
-
-        # check if light on 
-        if( light_on( binarized ) ):
-            # for decoding purposes
-            if( frame_total == 1 ):
-                LIGHT_ON_FIRST_FRAME = True
-
-            if( not light_is_on ):
-                logging.debug( "light turned on" )
-                off_list.append( frames_off )
-                frames_off = 0
-
-            frames_on += 1
-            light_is_on = True
-        else:
-            if( light_is_on ):
-                logging.debug( "light turned off" )
-                light_is_on = False
-                on_list.append( frames_on )
-                frames_on = 0
-            frames_off += 1
-
-        # show it
-        if( logging.root.level <= logging.DEBUG ):
-            if( cv.waitKey(1) & 0xFF == ord('q') ):
-                cv.destroyAllWindows()
-                break
-        frame_total += 1
     cap.release()
+    if( logging.root.level == logging.DEBUG ):
+        cv.destroyAllWindows()
 
     logging.debug( "on list" + str(on_list) )
     logging.debug( "off list" + str(off_list) )
@@ -237,7 +242,7 @@ def main():
 
     print( times_on )
     print( times_off )
-    print( DECODER( times_on, times_off, LIGHT_ON_FIRST_FRAME ) )
+    print( DECODER( times_on, times_off ) )
     
 if( __name__ == "__main__" ):
     parse_cli_args()

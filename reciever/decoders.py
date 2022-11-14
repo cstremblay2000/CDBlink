@@ -43,7 +43,7 @@ MORSE_DICT = {'01': 'a', '1000': 'b', '1010': 'c', '100': 'd', '0': 'e',
               '00011': '3', '00001': '4', '00000': '5', '10000': '6', 
               '11000': '7', '11100': '8', '11110': '9'}
 
-def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
+def ook_demodulate( dur_on:list, dur_off:list ) -> str:
     """
     description:
         Demodulats on-on-keying based on durations provided by user.
@@ -54,7 +54,6 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     parameters:
         dur_on  -> the list of durations the light is on for
         dur_off -> the list of durations the light is off for
-        lff     -> if the light is on for the first frame (light first frame)
     returns:
         a string containing ascii 1's and 0's
     """
@@ -108,7 +107,7 @@ def ook_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
         
     return bitstring
 
-def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
+def bfsk_demodulate( dur_on:list, dur_off:list ) -> str:
     """
     desription:
         demodulates a binary frequency shift keying modulated message.
@@ -118,8 +117,6 @@ def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
     parameters:
         dur_on  -> the list of times light was on
         dur_off -> the list of times the light was off
-        lff     -> if the light was on first frame
-        cb      -> the calibration blink
     returns:
         the demodulated bit string
     """
@@ -150,7 +147,7 @@ def bfsk_demodulate( dur_on:list, dur_off:list, lff:bool ) -> str:
 
     return bitstring
 
-def ook_bfsk_decode( bitstring:str ) -> str:
+def bfsk_decode( dur_on:list, dur_off:list ) -> str:
     """
     description:
         decodes a bitstring if it has been demodulated from 
@@ -160,6 +157,9 @@ def ook_bfsk_decode( bitstring:str ) -> str:
     returns:
         the decoded message
     """
+    # demodulate string
+    bitstring = bfsk_demodulate( dur_on, dur_off )
+
     # create 7 bit substrings 
     substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
 
@@ -169,11 +169,27 @@ def ook_bfsk_decode( bitstring:str ) -> str:
         msg += chr( int( ss, 2 ) ) 
     return msg
 
-def decode_ascii( dur_on:list, dur_off: list, encoding:int, lff:bool ) -> str:
+def ook_decode( dur_on:list, dur_off:list ) -> str:
     """
+    description:
+        decodes a bitstring if it has been demodulated from 
+        on-off-keying (ook) or binary frequency shift keying (bfsk)
+    parameters:
+        bitstring -> the ascii string containing 1's and 0's
+    returns:
+        the decoded message
     """
-    # TODO
-    return ""
+    # demodulate ook
+    bitstring = ook_demodulate( dur_on, dur_off )
+
+    # create 7 bit substrings 
+    substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
+
+    # decode message
+    msg = ""
+    for ss in substrings:
+        msg += chr( int( ss, 2 ) )
+    return msg
 
 def classify_morse_dot_dash( duration:int, cb:float ) -> chr:
     """
@@ -229,7 +245,7 @@ def classify_morse_space( duration:int, cb:float ) -> Enum:
         return SPACES.WORD
     return None
 
-def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
+def decode_morse( dur_on:list, dur_off:list  ) -> str:
     """
     description:
         A long blink is first sent to ensure that the drive is spun up.
@@ -244,7 +260,6 @@ def decode_morse( dur_on:list, dur_off:list, light_first_frame:bool  ) -> str:
     parameters:
         dur_on  -> the list of times where durations of light on
         dur_off -> the list of times where the lights are off
-        light_first_frame -> if the light was on for the first frame
     returns:
         the decoded message
     """
