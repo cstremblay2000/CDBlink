@@ -49,7 +49,7 @@ def ook_bfsk_encode(msg, codec):
     if codec == 2:
         code = '1010101' + code + '1010101'
     else:
-        code = '0000' + code + '0000'
+        code = '0000000' + code + '0000000'
 
     return code
 
