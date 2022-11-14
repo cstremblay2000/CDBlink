@@ -4,7 +4,7 @@ from subprocess import run
 
 # Global variables for read lengths
 short = '1000'
-long = '2000'
+long = '3000'
 
 
 # Convert message to morse code
@@ -75,7 +75,7 @@ def morse_transmit(code):
             else:
                 # Transmit dash
                 out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + long, 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
+                 'oflag=nocache,dsync', 'bs=2K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one second between signals
