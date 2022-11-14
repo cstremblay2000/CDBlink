@@ -3,8 +3,8 @@ from time import sleep
 from subprocess import run
 
 # Global variables for read lengths
-short = '500'
-long = '1000'
+short = '1000'
+long = '2000'
 
 
 # Convert message to morse code
@@ -25,14 +25,11 @@ def morse_encode(msg):
                 'y': '1011', 'z': '1100', '0': '11111', '1': '01111', '2': '00111', '3': 
                 '00011', '4': '00001', '5': '00000', '6': '10000', '7': '11000', '8': '11100', '9': '11110'}
 
-    code = ['0000']
+    code = ['0']
 
     # Convert each char to morse using dictionary
     for c in msg:
         code.append(morse_dict[c])
-
-    # Add sync/calibration signal
-    code.append('0000')
 
     return code
 
@@ -47,9 +44,9 @@ def ook_bfsk_encode(msg, codec):
 
     # Add sync/calibration signals
     if codec == 2:
-        code = '1010101' + code + '1010101'
+        code = '101010101' + code
     else:
-        code = '0000000' + code + '0000000'
+        code = '0' + code
 
     return code
 
@@ -63,7 +60,7 @@ def morse_transmit(code):
                  'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     # Save output of dd for log
     log.append(out.stderr.decode().split('\n',2)[2])
-    sleep(3)
+    sleep(1.4)
 
     # Loop through every char
     for character in code:
@@ -82,7 +79,7 @@ def morse_transmit(code):
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one second between signals
-            sleep(1)
+            sleep(1.4)
             
         # Sleep a total of 3 seconds after finishing a character
         sleep(2)
@@ -102,12 +99,12 @@ def ook_transmit(code):
     out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
          'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     log.append(out.stderr.decode().split('\n',2)[2])
-    sleep(5)
+    sleep(3)
 
     # Read for 1 sec if 1, sleep for 1 if 0
     for bit in code:
         if bit == '0':
-            sleep(1)
+            sleep(calc_time(short))
         else:
             out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
@@ -141,12 +138,20 @@ def bsfk_transmit(code):
             log.append(out.stderr.decode().split('\n',2)[2])
   
         # Sleep one second between signals
-        sleep(1)
+        sleep(calc_time(short))
 
     f = open('./log.txt', 'w')
     for line in log:
         f.write(line)
     f.close()
+
+
+def calc_time( kB ):
+    # print(0.0008*float(kB) + 0.61817)
+    return 2 #0.0008*float(kB) + 0.61817
+
+def calc_kB( s ):
+    return (s-0.61817)/0.0008
 
 
 # This program uses dd to transmit messages from cd/dvd drives using the access ligth
