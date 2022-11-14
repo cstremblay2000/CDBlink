@@ -16,8 +16,11 @@ import math
 import decoders
 
 # debugging and logging constants
-NAMED_WINDOW    = "w1"
-NAMED_WINDOW1   = "w2"
+NW_ORIG         = "original"
+NW_CROP         = "cropped"
+NW_BLUR         = "blurred"
+NW_GRAY         = "grayscale"
+NW_BIN          = "binarize"
 LOGGING_LEVEL   = logging.INFO
 
 # populated after command line args are parsed
@@ -114,7 +117,8 @@ def main():
         The driver function
     """
     # open video 
-    cap = cv.VideoCapture( FILEPATH )
+    #cap = cv.VideoCapture( FILEPATH )
+    cap = cv.VideoCapture( 2 )
     logging.debug( "Opening file '%s'" % FILEPATH )
 
     # get frame rate 
@@ -123,8 +127,12 @@ def main():
     
     # create debug windows
     if( logging.root.level <= logging.DEBUG ):
-        cv.namedWindow( NAMED_WINDOW, cv.WINDOW_NORMAL )
-        cv.namedWindow( NAMED_WINDOW1, cv.WINDOW_NORMAL )
+        cv.namedWindow( NW_ORIG, cv.WINDOW_NORMAL )
+        if( CROP ):
+            cv.namedWindow( NW_CROP, cv.WINDOW_NORMAL )
+        cv.namedWindow( NW_BLUR, cv.WINDOW_NORMAL )
+        cv.namedWindow( NW_GRAY, cv.WINDOW_NORMAL )
+        cv.namedWindow( NW_BIN, cv.WINDOW_NORMAL )
 
     # start processing video frame by frame
     frame_total             = 1
@@ -138,17 +146,19 @@ def main():
     while( cap.isOpened() ):
         # get frame and check that it exists
         ret, frame = cap.read()
+        orig = frame
         if( not ret ):
             break
-        if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW1, frame )
 
         # crop image if specified by cli
         if( CROP ):
             frame = frame[Y:Y+DY,X:X+DX]
-            cv.imshow( NAMED_WINDOW, frame )
-            cv.waitKey()
-            print( "cropped" )
+            cv.imshow( NW_CROP, frame )
+            cv.rectangle( orig, (X,Y), (X+DX,Y+DY), (0,0,255), 5 )
+
+        # show orignal with rectangle around cropped area
+        if( logging.root.level <= logging.DEBUG ):
+            cv.imshow( NW_ORIG, orig )
 
         # keep track of frames for debugging
         logging.debug( "frame: %d" % frame_total )
@@ -166,9 +176,7 @@ def main():
         # | 1 1 1 | X -
         # | 1 1 1 |   9
         blur = cv.GaussianBlur( frame, (5,5), 0 )
-        cv.imshow( NAMED_WINDOW, frame )
-        cv.waitKey() 
-        print( "blurred" )
+        cv.imshow( NW_BLUR, frame )
 
         # pull out channel if specified
         channel = None
@@ -183,17 +191,13 @@ def main():
         else: # grayscale channel to threshold it to binary later
             channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
 
-        cv.imshow( NAMED_WINDOW, channel )
-        cv.waitKey()
-        print( "grayscaled" )
+        cv.imshow( NW_GRAY, channel )
          
         # binarize image, turn black and white
         # use green channel since lights used for testing are green
         ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
         
-        cv.imshow( NAMED_WINDOW, binarized )
-        cv.waitKey()
-        print( "binarized" )
+        cv.imshow( NW_BIN, binarized )
 
         # check if light on 
         if( light_on( binarized ) ):
@@ -218,9 +222,7 @@ def main():
 
         # show it
         if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW, binarized )
-            k = cv.waitKey( 0 )
-            if( k == ord( 'q' ) ):
+            if( cv.waitKey(1) & 0xFF == ord('q') ):
                 cv.destroyAllWindows()
                 break
         frame_total += 1
