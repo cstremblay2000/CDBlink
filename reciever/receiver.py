@@ -117,8 +117,10 @@ def main():
         The driver function
     """
     # open video 
-    #cap = cv.VideoCapture( FILEPATH )
-    cap = cv.VideoCapture( 2 )
+    if( FILEPATH.isnumeric() ):
+        cap = cv.VideoCapture( int(FILEPATH) )
+    else:
+        cap = cv.VideoCapture( FILEPATH )
     logging.debug( "Opening file '%s'" % FILEPATH )
 
     # get frame rate 
@@ -146,7 +148,7 @@ def main():
     while( cap.isOpened() ):
         # get frame and check that it exists
         ret, frame = cap.read()
-        orig = frame
+        orig = frame.copy()
         if( not ret ):
             break
 
