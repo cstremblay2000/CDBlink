@@ -3,14 +3,13 @@ from time import sleep
 from subprocess import run
 
 # Global variables for read lengths
-short = '1000'
-long = '3000'
+block_length = '1000'
 
 
 # Convert message to morse code
 def morse_encode(msg):
 
-    # Strip non-alphanumeric characters from message
+    # Convert to lower case and strip non-alphanumeric characters from message
     lower_msg = msg.lower()
     msg = ''
     for i in range(len(lower_msg)): 
@@ -60,7 +59,7 @@ def morse_transmit(code):
                  'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     # Save output of dd for log
     log.append(out.stderr.decode().split('\n',2)[2])
-    sleep(1.4)
+    sleep(1)
 
     # Loop through every char
     for character in code:
@@ -68,21 +67,21 @@ def morse_transmit(code):
         for signal in character:
             if signal == '0':
                 # Transmit dot   
-                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             else:
                 # Transmit dash
-                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + long, 'iflag=nocache',\
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + str(int(block_length)*3), 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
-            # Sleep one second between signals
-            sleep(1.4)
+            # Sleep one unit between signals
+            sleep(calc_time(block_length))
             
-        # Sleep a total of 3 seconds after finishing a character
-        sleep(2)
+        # Sleep a total of 3 units after finishing a character
+        sleep(calc_time(block_length*2))
 
     # Write output of dd commands to a log file
     f = open('./log.txt', 'w')
@@ -99,14 +98,14 @@ def ook_transmit(code):
     out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
          'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     log.append(out.stderr.decode().split('\n',2)[2])
-    sleep(3)
+    sleep(1)
 
-    # Read for 1 sec if 1, sleep for 1 if 0
+    # Read for 1 unit if 1, sleep for 1 if 0
     for bit in code:
         if bit == '0':
-            sleep(calc_time(short))
+            sleep(calc_time(block_length))
         else:
-            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
 
@@ -124,21 +123,21 @@ def bsfk_transmit(code):
     out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=15', 'iflag=nocache',\
          'oflag=nocache,dsync', 'bs=1M'], capture_output=True)
     log.append(out.stderr.decode().split('\n',2)[2])
-    sleep(5)
+    sleep(1)
 
-    # Read for 1 sec for 0, 2 for 1
+    # Read for 1 unit for 0, 2 for 1
     for bit in code:
         if bit == '0':
-            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + short, 'iflag=nocache',\
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
         else:
-            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + long, 'iflag=nocache',\
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + str(int(block_length)*2), 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
   
-        # Sleep one second between signals
-        sleep(calc_time(short))
+        # Sleep one unit between signals
+        sleep(calc_time(block_length))
 
     f = open('./log.txt', 'w')
     for line in log:
@@ -147,8 +146,7 @@ def bsfk_transmit(code):
 
 
 def calc_time( kB ):
-    # print(0.0008*float(kB) + 0.61817)
-    return 2 #0.0008*float(kB) + 0.61817
+    return 0.0008*float(kB) + 0.61817
 
 def calc_kB( s ):
     return (s-0.61817)/0.0008
@@ -165,14 +163,13 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-m', '--msg', type=str, required=False, help='Message to transmit')
     group.add_argument('-f', '--file', type=str, required=False, help='File to read message from')
-    parser.add_argument('-s', '--sblk', type=str, required=False, help='Length in KB of short read')
-    parser.add_argument('-l', '--lblk', type=str, required=False, help='Length in KB of long read')
+    parser.add_argument('-b', '--blkl', type=str, required=False, help='Length in KB of 1 unit for reading')
     args = parser.parse_args()
 
-    if args.sblk:
-        short = args.sblk
-    if args.lblk:
-        long = args.lblk
+    # Set Block length is specified
+    if args.blkl:
+        global block_length
+        block_length = args.blkl
 
     # Set message to transmit
     if args.msg:
