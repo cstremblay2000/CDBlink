@@ -71,7 +71,7 @@ def ook_demodulate( dur_on:list, dur_off:list ) -> str:
 
     # classify bits on 
     for dur in dur_on[2:]:
-        num_bits = round( dur/calibration_blink )
+        num_bits = round( dur/calibration_blink_on )
         print( "duron %f, num bits %d, calibrate blink %f" % 
                 (dur, num_bits, calibration_blink_on ) )
         if( num_bits == 0 ):
@@ -81,7 +81,7 @@ def ook_demodulate( dur_on:list, dur_off:list ) -> str:
     for dur in dur_off[3:]:
         num_bits = round( dur/calibration_blink_off )
         print( "duroff %f, num bits %d calibrate blink %f" % 
-               (dur, num_bits, calibration_blink ) )
+               (dur, num_bits, calibration_blink_off ) )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_off.append( '0'*num_bits )
