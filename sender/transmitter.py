@@ -73,8 +73,8 @@ def morse_transmit(code):
             
             else:
                 # Transmit dash
-                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + str(int(block_length)*3), 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=3K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one unit between signals
@@ -126,7 +126,7 @@ def bsfk_transmit(code):
     log.append(out.stderr.decode().split('\n',2)[2])
     sleep(1)
 
-    # Read for 1 unit for 0, 2 for 1
+    # Read for 1 unit for 0, 3 for 1
     for bit in code:
         if bit == '0':
             out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
@@ -134,7 +134,7 @@ def bsfk_transmit(code):
             log.append(out.stderr.decode().split('\n',2)[2])
         else:
             out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + str(int(block_length)*2), 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
+                 'oflag=nocache,dsync', 'bs=3K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
   
         # Sleep one unit between signals
@@ -153,7 +153,7 @@ def calc_kB( s ):
     return (s-0.61817)/0.0008
 
 
-# This program uses dd to transmit messages from cd/dvd drives using the access ligth
+# This program uses dd to transmit messages from cd/dvd drives using the access light
 def main():
     print('CD-Blink Covert Channel Transmitter')
 
@@ -167,7 +167,7 @@ def main():
     parser.add_argument('-b', '--blkl', type=str, required=False, help='Length in KB of 1 unit for reading')
     args = parser.parse_args()
 
-    # Set Block length is specified
+    # Set block length if specified
     if args.blkl:
         global block_length
         block_length = args.blkl
