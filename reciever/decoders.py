@@ -317,7 +317,7 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
 def main():
     """
     description:
-        little test suite
+        little test suite, might error there was a time crunch
     """
     # conditional import to avoid loading test data when file
     # is being used as a library
