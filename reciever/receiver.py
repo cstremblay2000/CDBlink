@@ -79,7 +79,7 @@ def parse_cli_args():
     if( ENCODING == 'morse' ):
         DECODER = decoders.decode_morse
     elif( ENCODING == 'bfsk' ):
-        DECODR = decoders.bfsk_decode
+        DECODER = decoders.bfsk_decode
     elif( ENCODING == 'ook' ):
         DECODER = decoders.ook_decode
     FILEPATH    = parsed.filepath

@@ -159,13 +159,15 @@ def bfsk_decode( dur_on:list, dur_off:list ) -> str:
     """
     # demodulate string
     bitstring = bfsk_demodulate( dur_on, dur_off )
+    print( len( bitstring ), bitstring )
 
     # create 7 bit substrings 
     substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
-
+    
     # decode message
     msg = ""
     for ss in substrings:
+        print( len( ss ), ss )
         msg += chr( int( ss, 2 ) ) 
     return msg
 
@@ -181,6 +183,7 @@ def ook_decode( dur_on:list, dur_off:list ) -> str:
     """
     # demodulate ook
     bitstring = ook_demodulate( dur_on, dur_off )
+    print( len( bitstring), bitstring )
 
     # create 7 bit substrings 
     substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
@@ -188,6 +191,7 @@ def ook_decode( dur_on:list, dur_off:list ) -> str:
     # decode message
     msg = ""
     for ss in substrings:
+        print( len(ss), ss )
         msg += chr( int( ss, 2 ) )
     return msg
 
@@ -309,10 +313,10 @@ def main():
     # decode morse
     print( "morse test, expecting result: hello" )
     msg = decode_morse( td.MORSE_HELLO_ONE_S_ON, 
-                        td.MORSE_HELLO_ONE_S_OFF, False )
+                        td.MORSE_HELLO_ONE_S_OFF )
     print( "\t", "ideal one second test result:", msg )
     msg = decode_morse( td.MORSE_HELLO_HALF_S_ON,
-                        td.MORSE_HELLO_HALF_S_OFF, False )
+                        td.MORSE_HELLO_HALF_S_OFF )
     print( "\t", "ideal half second test result:", msg )
     print( "done" )
     print()
@@ -321,7 +325,7 @@ def main():
     print( "ascii test, expecting hello" )
     print( "\t", "ook test one second" )
     bs = ook_demodulate( td.OOK_HELLO_ONE_S_ON, 
-                         td.OOK_HELLO_ONE_S_OFF, False )
+                         td.OOK_HELLO_ONE_S_OFF )
     print( "\t","demodulated", len( bs ), "bits" , bs )
     msg = ook_bfsk_decode( bs )
     print( "\t", "decoded", msg )
@@ -331,7 +335,7 @@ def main():
     print( "ascii test, expecting hello" )
     print( "\t", "ook test half second" )
     bs = ook_demodulate( td.OOK_HELLO_HALF_S_ON,
-                         td.OOK_HELLO_HALF_S_OFF, False )
+                         td.OOK_HELLO_HALF_S_OFF )
     print( "\t","demodulated", len( bs ), "bits" , bs )
     msg = ook_bfsk_decode( bs )
     print( "\t", "decoded", msg )
@@ -340,15 +344,14 @@ def main():
 
     print( "\t", "bfsk one second test" )
     bs = bfsk_demodulate( td.BFSK_HELLO_ONE_S_ON,
-                         td.BFSK_HELLO_ONE_S_OFF, False )
+                         td.BFSK_HELLO_ONE_S_OFF )
     print( "\t","demodulated", len( bs ), "bits" , bs )
-    msg = ook_bfsk_decode( bs )
     print( "\t", "decoded", msg )
     print()
 
     print( "\t", "bfsk test half second" )
     bs = bfsk_demodulate( td.BFSK_HELLO_HALF_S_ON,
-                          td.BFSK_HELLO_HALF_S_OFF, False )
+                          td.BFSK_HELLO_HALF_S_OFF )
     print( "\t","demodulated", len( bs ), "bits" , bs )
     msg = ook_bfsk_decode( bs )
     print( "\t", "decoded", msg )
