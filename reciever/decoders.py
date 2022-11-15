@@ -12,6 +12,7 @@ description:
 """
 
 from enum import Enum
+from statistics import mean
 
 # shared constants
 SPIN_UP_TIME_THRESH     = 10 # seconds
@@ -64,16 +65,23 @@ def ook_demodulate( dur_on:list, dur_off:list ) -> str:
 
     # get calibration blink
     calibration_blink = dur_on[1]
+    calibration_blink_on = mean( dur_on[1:5] )
+    calibration_blink_off = mean( dur_off[2:5] )
+    print( "calibration blink", calibration_blink )
 
     # classify bits on 
     for dur in dur_on[2:]:
         num_bits = round( dur/calibration_blink )
+        print( "duron %f, num bits %d, calibrate blink %f" % 
+                (dur, num_bits, calibration_blink_on ) )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_on.append( '1'*num_bits )
 
     for dur in dur_off[3:]:
-        num_bits = round( dur/calibration_blink )
+        num_bits = round( dur/calibration_blink_off )
+        print( "duroff %f, num bits %d calibrate blink %f" % 
+               (dur, num_bits, calibration_blink ) )
         if( num_bits == 0 ):
             num_bits = 1
         bitstring_off.append( '0'*num_bits )
@@ -183,7 +191,7 @@ def ook_decode( dur_on:list, dur_off:list ) -> str:
     """
     # demodulate ook
     bitstring = ook_demodulate( dur_on, dur_off )
-    print( len( bitstring), bitstring )
+    ( len( bitstring), bitstring )
 
     # create 7 bit substrings 
     substrings = [bitstring[i:i+7] for i in range( 0, len(bitstring), 7 )]
@@ -288,13 +296,17 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
         space = classify_morse_space( dur_off[i], calibration_blink )
 
         # check if light on was first frame or not
-        if( space == SPACES.SIGNAL or buffer == "" ):
-            buffer += dot_dash
-        if( space == SPACES.LETTER ):
-            msg += MORSE_DICT[buffer]
-            buffer = dot_dash
-        if( space == SPACES.WORD ):
-            msg += ' ' + MORSE_DICT[buffer]
+        try:
+            if( space == SPACES.SIGNAL or buffer == "" ):
+                buffer += dot_dash
+            if( space == SPACES.LETTER ):
+                msg += MORSE_DICT[buffer]
+                buffer = dot_dash
+            if( space == SPACES.WORD ):
+                msg += ' ' + MORSE_DICT[buffer]
+                buffer = dot_dash
+        except:
+            msg += '-'
             buffer = dot_dash
 
     if( buffer != "" and buffer in MORSE_DICT.keys() ):
