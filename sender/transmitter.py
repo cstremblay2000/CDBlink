@@ -107,7 +107,7 @@ def ook_transmit(code):
         else:
             out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=1', 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=%sk' % block_length ], capture_output=True)
-            sleep( 0.35 )
+            sleep( 0.3 )
             log.append(out.stderr.decode().split('\n',2)[2])
 
     f = open('./log.txt', 'w')
