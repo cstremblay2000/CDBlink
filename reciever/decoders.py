@@ -305,9 +305,10 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
             if( space == SPACES.WORD ):
                 msg += ' ' + MORSE_DICT[buffer]
                 buffer = dot_dash
-        except:
-            msg += '-'
+        except Exception as e:
+            msg += '_'
             buffer = dot_dash
+            print( e )
 
     if( buffer != "" and buffer in MORSE_DICT.keys() ):
         msg += MORSE_DICT[buffer]
