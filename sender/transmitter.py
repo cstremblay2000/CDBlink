@@ -3,7 +3,7 @@ from time import sleep
 from subprocess import run
 
 # Global variables for read lengths
-block_length = '1000'
+block_length = 1000
 
 
 # Convert message to morse code
@@ -105,8 +105,9 @@ def ook_transmit(code):
         if bit == '0':
             sleep(calc_time(block_length))
         else:
-            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
+            out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=1', 'iflag=nocache',\
+                 'oflag=nocache,dsync', 'bs=%dk' % block_length ], capture_output=True)
+            sleep( 0.35 )
             log.append(out.stderr.decode().split('\n',2)[2])
 
     f = open('./log.txt', 'w')
