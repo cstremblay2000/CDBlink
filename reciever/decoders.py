@@ -175,6 +175,8 @@ def bfsk_decode( dur_on:list, dur_off:list ) -> str:
     # decode message
     msg = ""
     for ss in substrings:
+        if( len( ss ) < 7 ):
+            ss = ss + '0'*(7-len(ss)) # pad with zeros 
         print( len( ss ), ss )
         msg += chr( int( ss, 2 ) ) 
     return msg
@@ -199,6 +201,8 @@ def ook_decode( dur_on:list, dur_off:list ) -> str:
     # decode message
     msg = ""
     for ss in substrings:
+        if( len( ss ) < 7 ):
+            ss = ss + '0'*(7-len(ss)) # pad last substring with zeros
         print( len(ss), ss )
         msg += chr( int( ss, 2 ) )
     return msg
