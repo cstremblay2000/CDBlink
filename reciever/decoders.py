@@ -282,16 +282,8 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
     # start decoding
     msg = "" 
     buffer = ""
-    calibration_blink = -1
-    for i in range( 1, max( len( dur_on ), len( dur_off ) ) ):
-        # for sync messages, probably a better way to do this but oh well
-        if( dur_on[i] > SPIN_UP_TIME_THRESH ):
-            continue 
-
-        # read the calibration blink
-        if( i == 1 ):
-            calibration_blink = dur_on[i]
-            continue
+    calibration_blink = dur_on[1]
+    for i in range( 2, max( len( dur_on ), len( dur_off ) ) ):
 
         # calculate distances of the duration on to dot or dash
         dot_dash = classify_morse_dot_dash( dur_on[i], calibration_blink )
