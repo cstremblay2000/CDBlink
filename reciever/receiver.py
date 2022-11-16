@@ -242,7 +242,7 @@ def main():
 
     print( times_on )
     print( times_off )
-    print( DECODER( times_on, times_off ) )
+    print( "recieved msg:", DECODER( times_on, times_off ) )
     
 if( __name__ == "__main__" ):
     parse_cli_args()
