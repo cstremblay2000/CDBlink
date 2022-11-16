@@ -219,8 +219,8 @@ def classify_morse_dot_dash( duration:int, cb:float ) -> chr:
         '1' -> character one if a dash
     """
     # get distances
-    dist_dot  = abs( duration - MORSE_DOT*cb )
-    dist_dash = abs( duration - MORSE_DASH*cb )
+    dist_dot  = abs( duration/cb - MORSE_DOT )
+    dist_dash = abs( duration/cb - MORSE_DASH )
 
     # classify
     min_dist = min( dist_dot, dist_dash )
@@ -245,9 +245,9 @@ def classify_morse_space( duration:int, cb:float ) -> Enum:
         SPACES.WORD   -> if space between words
     """
     # get distances 
-    sig_dist = abs( duration - MORSE_SPACE_SIGNAL*cb )
-    let_dist = abs( duration - MORSE_SPACE_LETTER*cb )
-    wor_dist = abs( duration - MORSE_SPACE_WORD*cb   )
+    sig_dist = abs( duration/cb - MORSE_SPACE_SIGNAL )
+    let_dist = abs( duration/cb - MORSE_SPACE_LETTER )
+    wor_dist = abs( duration/cb - MORSE_SPACE_WORD )
 
     # calc min distance
     min_dist = min( sig_dist, let_dist, wor_dist )
@@ -289,7 +289,7 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
             continue 
 
         # read the calibration blink
-        if( i == 2 ):
+        if( i == 1 ):
             calibration_blink = dur_on[i]
             continue
 
@@ -303,12 +303,17 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
         try:
             if( space == SPACES.SIGNAL or buffer == "" ):
                 buffer += dot_dash
+                print( "\t", dot_dash )
             if( space == SPACES.LETTER ):
                 msg += MORSE_DICT[buffer]
                 buffer = dot_dash
+                print( "detected letter", msg )
+                print( "\t", buffer )
             if( space == SPACES.WORD ):
                 msg += ' ' + MORSE_DICT[buffer]
                 buffer = dot_dash
+                print( "detected word", msg )
+                print( "\t", buffer )
         except Exception as e:
             msg += '_'
             buffer = dot_dash
