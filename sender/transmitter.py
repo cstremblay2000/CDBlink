@@ -3,7 +3,7 @@ from time import sleep
 from subprocess import run
 
 # Global variables for read lengths
-block_length = '1000'
+block_length = '500'
 
 
 # Convert message to morse code
@@ -43,7 +43,7 @@ def ook_bfsk_encode(msg, codec):
 
     # Add sync/calibration signals
     if codec == 2:
-        code = '101010101' + code
+        code = '101010101' + code + '101010101'
     else:
         code = '0' + code
 
@@ -70,18 +70,18 @@ def morse_transmit(code):
                 out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
                  'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
-            
             else:
                 # Transmit dash
                 out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=3K'], capture_output=True)
+                 'oflag=nocache,dsync', 'bs=6K'], capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one unit between signals
             sleep(calc_time(block_length))
             
         # Sleep a total of 3 units after finishing a character
-        sleep(calc_time(block_length*2))
+        sleep(calc_time(block_length))
+        sleep(calc_time(block_length))
 
     # Write output of dd commands to a log file
     f = open('./log.txt', 'w')
@@ -134,7 +134,7 @@ def bsfk_transmit(code):
             log.append(out.stderr.decode().split('\n',2)[2])
         else:
             out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + str(int(block_length)*2), 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=3K'], capture_output=True)
+                 'oflag=nocache,dsync', 'bs=6K'], capture_output=True)
             log.append(out.stderr.decode().split('\n',2)[2])
   
         # Sleep one unit between signals
@@ -146,11 +146,9 @@ def bsfk_transmit(code):
     f.close()
 
 
+# Determine how long to sleep based on block length
 def calc_time( kB ):
     return 0.0008*float(kB) + 0.61817
-
-def calc_kB( s ):
-    return (s-0.61817)/0.0008
 
 
 # This program uses dd to transmit messages from cd/dvd drives using the access light
