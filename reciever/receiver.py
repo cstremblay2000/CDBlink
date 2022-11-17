@@ -243,6 +243,7 @@ def main():
     print( times_on )
     print( times_off )
     print( "recieved msg:", DECODER( times_on, times_off ) )
+    print( "time to xmit:", sum( times_on ) + sum( times_off[1:len(times_on)]))
     
 if( __name__ == "__main__" ):
     parse_cli_args()
