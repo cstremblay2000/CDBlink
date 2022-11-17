@@ -67,13 +67,18 @@ def morse_transmit(code):
         for signal in character:
             if signal == '0':
                 # Transmit dot   
-                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=1K'], capture_output=True)
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 
+                           'count=1', 'iflag=nocache',\
+                           'oflag=nocache,dsync', 'bs=%sK' % block_length], 
+                           capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             else:
                 # Transmit dash
-                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 'count=' + block_length, 'iflag=nocache',\
-                 'oflag=nocache,dsync', 'bs=6K'], capture_output=True)
+                out = run(['dd', 'if=/dev/sr0', 'of=/dev/null', 
+                           'count=1', 'iflag=nocache',\
+                           'oflag=nocache,dsync', 'bs=%sK' \
+                           % str(int(block_length)*6) ], 
+                           capture_output=True)
                 log.append(out.stderr.decode().split('\n',2)[2])
             
             # Sleep one unit between signals
