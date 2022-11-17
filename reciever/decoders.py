@@ -72,7 +72,7 @@ def ook_demodulate( dur_on:list, dur_off:list ) -> str:
     # classify bits on 
     for dur in dur_on[2:]:
         num_bits = round( dur/calibration_blink_on )
-        print( "duron %f, num bits %d, calibrate blink %f" % 
+        print( "duron %f, num bits %d, calibrate blink %f" % \
                 (dur, num_bits, calibration_blink_on ) )
         if( num_bits == 0 ):
             num_bits = 1
@@ -283,19 +283,35 @@ def decode_morse( dur_on:list, dur_off:list  ) -> str:
     msg = "" 
     buffer = ""
     calibration_blink = dur_on[1]
-    for i in range( 2, max( len( dur_on ), len( dur_off ) ) ):
+    idx_on = 2
+    idx_off = 2
+    ld_on = len( dur_on )
+    ld_off = len( dur_off )
+    while( True ):
+        if( idx_on >= ld_on and idx_off >= ld_off ):
+            break
 
         # calculate distances of the duration on to dot or dash
-        dot_dash = classify_morse_dot_dash( dur_on[i], calibration_blink )
+        dot_dash = ""
+        if( idx_on < ld_on ):
+            dot_dash = classify_morse_dot_dash( dur_on[idx_on], 
+                                                calibration_blink )
+            print( "\t%s on %2.2f cb %2.2f" %
+                    ( dot_dash,dur_on[idx_on], calibration_blink ) )
+            idx_on += 1
+
 
         # classify space
-        space = classify_morse_space( dur_off[i], calibration_blink )
+        space = ""
+        if( idx_off < ld_off ):
+            space = classify_morse_space( dur_off[idx_off], 
+                                          calibration_blink )
+            idx_off += 1
 
         # check if light on was first frame or not
         try:
             if( space == SPACES.SIGNAL or buffer == "" ):
                 buffer += dot_dash
-                print( "\t", dot_dash )
             if( space == SPACES.LETTER ):
                 msg += MORSE_DICT[buffer]
                 buffer = dot_dash
