@@ -33,19 +33,7 @@ DY          = 0
 ENCODING    = "morse"
 CHANNEL     = 'g'
 DECODER     = None
-
-# populated after command line args are parsed
-FILEPATH    = ""        # path to video
-CROP        = False     # crop image at all
-X           = 0         # top left corner, for cropping
-Y           = 0         # top right cornerm for cropping
-DX          = 0         # how much rectangle extends right
-DY          = 0         # how much rectangle extends down
-ENCODING    = "ascii"   # how blinks are interpurted
-DOT         = 100       # ms
-DASH        = 300       # ms
-SPACE       = 500       # ms
-CHANNEL     = 'g'       # which color channel to pull out
+LOGGING_LEVEL   = logging.DEBUG
 
 def parse_cli_args():
     """
@@ -61,6 +49,8 @@ def parse_cli_args():
                          help="morse, binary frequency shift keying, " +
                                " on-off keying. Default morse",
                          default='morse' )
+                         choices=['morse', 'ascii'], \
+                         help="encoding for recieved message, default ascii" )
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', \
                          nargs=4, \
@@ -71,6 +61,9 @@ def parse_cli_args():
     parser.add_argument( '-C', '--channel', 
                          choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
+                         "binarize image, default is green" )
+    parser.add_argument( '-d', '--debug', help='debugging mode', \
+                         action='store_true' )
                          "binarize image, default is green" )
     parser.add_argument( '-d', '--debug', help='debugging mode', \
                          action='store_true' )
@@ -172,6 +165,64 @@ def main():
             ret, frame = cap.read()
             orig = frame.copy()
             if( not ret ):
+                break
+        # get frame and check that it exists
+        ret, frame = cap.read()
+        if( not ret ):
+            break
+        if( logging.root.level <= logging.DEBUG ):
+            cv.imshow( NAMED_WINDOW1, frame )
+
+        # crop image if specified by cli
+        if( CROP ):
+            frame = frame[Y:Y+DY,X:X+DX]
+
+        # keep track of frames for debugging
+        logging.debug( "frame: %d" % frame_total )
+        frame_total += 1
+
+        # blur image and split into 3 color channels
+        blur = cv.GaussianBlur( frame, (5,5), 0 )
+        
+        # pull out channel if specified
+        channel = None
+        if( CHANNEL[0] != 'n' ):
+            b,g,r   = cv.split( frame )
+            if( CHANNEL == 'r' ):
+                channel = r
+            elif( CHANNEL == 'g' ):
+                channel = g
+            elif( CHANNEL == 'b' ):
+                channel = b
+        else: # grayscale channel to threshold it to binary later
+            channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
+         
+        # binarize image, turn black and white
+        # use green channel since lights used for testing are green
+        ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
+
+        # check if light on 
+        if( light_on( binarized ) ):
+            if( not light_is_on ):
+                logging.debug( "light turned on" )
+                off_list.append( frames_off )
+                frames_off = 0
+            frames_on += 1
+            light_is_on = True
+        else:
+            if( light_is_on ):
+                logging.debug( "light turned off" )
+                light_is_on = False
+                on_list.append( frames_on )
+                frames_on = 0
+            frames_off += 1
+
+        # show it
+        if( logging.root.level <= logging.DEBUG ):
+            cv.imshow( NAMED_WINDOW, binarized )
+            k = cv.waitKey( 0 )
+            if( k == ord( 'q' ) ):
+                cv.destroyAllWindows()
                 break
 
             # crop image if specified by cli
