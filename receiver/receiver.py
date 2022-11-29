@@ -49,7 +49,8 @@ def parse_cli_args():
                          help="morse, binary frequency shift keying, " +
                                " on-off keying. Default morse",
                          default='morse' )
-    parser.add_argument( 'filepath' )
+    parser.add_argument( 'filepath', help="path pre-recorded video, or number"+
+            " of device to stream from" )
     parser.add_argument( '-c', '--crop', \
                          nargs=4, \
                          metavar='N', 
