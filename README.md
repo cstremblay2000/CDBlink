@@ -22,11 +22,8 @@ for.
 The idea to use this program is to crop out a small rectangle around the light
 being observed. This means that the user should know the coordinates of the
 top left corner, width, and height of the bounding rectangle to isolate the
-light. This can easily be found by changing the constant
-`LOGGING_LEVEL=logging.DEBUG` near the top of the `receiver.py` file and 
-using the OpenCV window to get the relevant coordinates. Changing
-`LOGGING_LEVEL=logging.INFO` will just run the script regularly without any
-debug functionality.  
+light. This can easily be found by adding the `-d` flag. This will bring up the 
+native OpenCV image windows where the user can view the coordinates of the pixes. 
 
 ### Dependencies
 - [Python3](https://www.python.org/downloads/)
@@ -35,13 +32,13 @@ debug functionality.
 
 ### How to run
 - To run the program use `python3 receiver.py [filename]`
-- To see an example checkout `receiver/test_mp4.sh` 
 
 ### Usage message
 ```
-usage: receiver.py [-h] [-e {morse,ascii}] [-c N N N N] [-C {r,g,b,none}] filepath
+usage: receiver.py [-h] [-e {morse,ascii}] [-c N N N N] [-C {r,g,b,none}] [-d]
+                   filepath
 
-Process arguments
+decode a message from flashing lights
 
 positional arguments:
   filepath
@@ -49,12 +46,11 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   -e {morse,ascii}, --encoding {morse,ascii}
-                        encoding for recieved message, default ascii
+                        encoding for recieved message, default morse
   -c N N N N, --crop N N N N
-                        x y W H -> crop image to a rectangle of WxH, with top left corner at
-                        (x,y)
+                        x y dx dy -> crop image bounded by (x+dx,y+dy)
   -C {r,g,b,none}, --channel {r,g,b,none}
-                        Specify which channel to pull out and use to binarize image, default is
-                        green
-
+                        Specify which channel to pull out and use tobinarize
+                        image, default is green
+  -d, --debug           debugging mode
 ```
