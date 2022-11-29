@@ -16,7 +16,6 @@ import math
 import decoders
 
 # debugging and logging constants
-<<<<<<< HEAD:reciever/receiver.py
 NW_ORIG         = "original"
 NW_CROP         = "cropped"
 NW_BLUR         = "blurred"
@@ -34,25 +33,7 @@ DY          = 0
 ENCODING    = "morse"
 CHANNEL     = 'g'
 DECODER     = None
-=======
-NAMED_WINDOW    = "w1"
-NAMED_WINDOW1   = "w2"
-FORMAT          = "[%(levelname)s %(funcName)-10s] %(message)s"
 LOGGING_LEVEL   = logging.DEBUG
-
-# populated after command line args are parsed
-FILEPATH    = ""        # path to video
-CROP        = False     # crop image at all
-X           = 0         # top left corner, for cropping
-Y           = 0         # top right cornerm for cropping
-DX          = 0         # how much rectangle extends right
-DY          = 0         # how much rectangle extends down
-ENCODING    = "ascii"   # how blinks are interpurted
-DOT         = 100       # ms
-DASH        = 300       # ms
-SPACE       = 500       # ms
-CHANNEL     = 'g'       # which color channel to pull out
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
 
 def parse_cli_args():
     """
@@ -64,15 +45,12 @@ def parse_cli_args():
     parser = argparse.ArgumentParser( description="decode a message from " +
             "flashing lights" )
     parser.add_argument( '-e', '--encoding', \
-<<<<<<< HEAD:reciever/receiver.py
                          choices=['morse', 'bfsk','ook'],\
                          help="morse, binary frequency shift keying, " +
                                " on-off keying. Default morse",
                          default='morse' )
-=======
                          choices=['morse', 'ascii'], \
                          help="encoding for recieved message, default ascii" )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', \
                          nargs=4, \
@@ -83,13 +61,12 @@ def parse_cli_args():
     parser.add_argument( '-C', '--channel', 
                          choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
-<<<<<<< HEAD:reciever/receiver.py
                          "binarize image, default is green" )
     parser.add_argument( '-d', '--debug', help='debugging mode', \
                          action='store_true' )
-=======
-                         " binarize image, default is green" )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
+                         "binarize image, default is green" )
+    parser.add_argument( '-d', '--debug', help='debugging mode', \
+                         action='store_true' )
     
     # init variables as global
     global FILEPATH
@@ -183,13 +160,12 @@ def main():
     off_list                = list()
 
     while( cap.isOpened() ):
-<<<<<<< HEAD:reciever/receiver.py
         try:
             # get frame and check that it exists
             ret, frame = cap.read()
             orig = frame.copy()
             if( not ret ):
-=======
+                break
         # get frame and check that it exists
         ret, frame = cap.read()
         if( not ret ):
@@ -247,7 +223,6 @@ def main():
             k = cv.waitKey( 0 )
             if( k == ord( 'q' ) ):
                 cv.destroyAllWindows()
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
                 break
 
             # crop image if specified by cli
@@ -326,7 +301,6 @@ def main():
             break
 
     cap.release()
-<<<<<<< HEAD:reciever/receiver.py
     if( logging.root.level == logging.DEBUG ):
         cv.destroyAllWindows()
 
@@ -334,14 +308,6 @@ def main():
     logging.debug( "off list" + str(off_list) )
     times_on  = [e/fps for e in on_list]
     times_off = [e/fps for e in off_list ]
-=======
-
-    # show results
-    logging.debug( "on list" + str(on_list) )
-    logging.debug( "off list" + str(off_list) )
-    times = [e/fps for e in on_list]
-    print( "durations light is on", times )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
 
     print( times_on )
     print( times_off )
@@ -350,8 +316,4 @@ def main():
     
 if( __name__ == "__main__" ):
     parse_cli_args()
-<<<<<<< HEAD:reciever/receiver.py
-=======
-    logging.basicConfig( level=LOGGING_LEVEL, format=FORMAT )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
     main()
