@@ -16,7 +16,6 @@ import math
 import decoders
 
 # debugging and logging constants
-<<<<<<< HEAD:reciever/receiver.py
 NW_ORIG         = "original"
 NW_CROP         = "cropped"
 NW_BLUR         = "blurred"
@@ -34,11 +33,6 @@ DY          = 0
 ENCODING    = "morse"
 CHANNEL     = 'g'
 DECODER     = None
-=======
-NAMED_WINDOW    = "w1"
-NAMED_WINDOW1   = "w2"
-FORMAT          = "[%(levelname)s %(funcName)-10s] %(message)s"
-LOGGING_LEVEL   = logging.DEBUG
 
 # populated after command line args are parsed
 FILEPATH    = ""        # path to video
@@ -52,7 +46,6 @@ DOT         = 100       # ms
 DASH        = 300       # ms
 SPACE       = 500       # ms
 CHANNEL     = 'g'       # which color channel to pull out
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
 
 def parse_cli_args():
     """
@@ -64,15 +57,10 @@ def parse_cli_args():
     parser = argparse.ArgumentParser( description="decode a message from " +
             "flashing lights" )
     parser.add_argument( '-e', '--encoding', \
-<<<<<<< HEAD:reciever/receiver.py
                          choices=['morse', 'bfsk','ook'],\
                          help="morse, binary frequency shift keying, " +
                                " on-off keying. Default morse",
                          default='morse' )
-=======
-                         choices=['morse', 'ascii'], \
-                         help="encoding for recieved message, default ascii" )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
     parser.add_argument( 'filepath' )
     parser.add_argument( '-c', '--crop', \
                          nargs=4, \
@@ -83,13 +71,9 @@ def parse_cli_args():
     parser.add_argument( '-C', '--channel', 
                          choices=['r','g','b', 'none'],\
                          help="Specify which channel to pull out and use to" +\
-<<<<<<< HEAD:reciever/receiver.py
                          "binarize image, default is green" )
     parser.add_argument( '-d', '--debug', help='debugging mode', \
                          action='store_true' )
-=======
-                         " binarize image, default is green" )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
     
     # init variables as global
     global FILEPATH
@@ -183,71 +167,11 @@ def main():
     off_list                = list()
 
     while( cap.isOpened() ):
-<<<<<<< HEAD:reciever/receiver.py
         try:
             # get frame and check that it exists
             ret, frame = cap.read()
             orig = frame.copy()
             if( not ret ):
-=======
-        # get frame and check that it exists
-        ret, frame = cap.read()
-        if( not ret ):
-            break
-        if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW1, frame )
-
-        # crop image if specified by cli
-        if( CROP ):
-            frame = frame[Y:Y+DY,X:X+DX]
-
-        # keep track of frames for debugging
-        logging.debug( "frame: %d" % frame_total )
-        frame_total += 1
-
-        # blur image and split into 3 color channels
-        blur = cv.GaussianBlur( frame, (5,5), 0 )
-        
-        # pull out channel if specified
-        channel = None
-        if( CHANNEL[0] != 'n' ):
-            b,g,r   = cv.split( frame )
-            if( CHANNEL == 'r' ):
-                channel = r
-            elif( CHANNEL == 'g' ):
-                channel = g
-            elif( CHANNEL == 'b' ):
-                channel = b
-        else: # grayscale channel to threshold it to binary later
-            channel = cv.cvtColor( frame, cv.COLOR_BGR2GRAY )
-         
-        # binarize image, turn black and white
-        # use green channel since lights used for testing are green
-        ret, binarized = cv.threshold( channel, 127, 255, cv.THRESH_BINARY )
-
-        # check if light on 
-        if( light_on( binarized ) ):
-            if( not light_is_on ):
-                logging.debug( "light turned on" )
-                off_list.append( frames_off )
-                frames_off = 0
-            frames_on += 1
-            light_is_on = True
-        else:
-            if( light_is_on ):
-                logging.debug( "light turned off" )
-                light_is_on = False
-                on_list.append( frames_on )
-                frames_on = 0
-            frames_off += 1
-
-        # show it
-        if( logging.root.level <= logging.DEBUG ):
-            cv.imshow( NAMED_WINDOW, binarized )
-            k = cv.waitKey( 0 )
-            if( k == ord( 'q' ) ):
-                cv.destroyAllWindows()
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
                 break
 
             # crop image if specified by cli
@@ -326,7 +250,6 @@ def main():
             break
 
     cap.release()
-<<<<<<< HEAD:reciever/receiver.py
     if( logging.root.level == logging.DEBUG ):
         cv.destroyAllWindows()
 
@@ -334,14 +257,6 @@ def main():
     logging.debug( "off list" + str(off_list) )
     times_on  = [e/fps for e in on_list]
     times_off = [e/fps for e in off_list ]
-=======
-
-    # show results
-    logging.debug( "on list" + str(on_list) )
-    logging.debug( "off list" + str(off_list) )
-    times = [e/fps for e in on_list]
-    print( "durations light is on", times )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
 
     print( times_on )
     print( times_off )
@@ -350,8 +265,4 @@ def main():
     
 if( __name__ == "__main__" ):
     parse_cli_args()
-<<<<<<< HEAD:reciever/receiver.py
-=======
-    logging.basicConfig( level=LOGGING_LEVEL, format=FORMAT )
->>>>>>> ce2effcf9531807ebe67be446ad1e5a6f1734bb3:receiver/receiver.py
     main()
