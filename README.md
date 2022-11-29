@@ -41,7 +41,7 @@ usage: receiver.py [-h] [-e {morse,bfsk,ook}] [-c N N N N] [-C {r,g,b,none}] [-d
 decode a message from flashing lights
 
 positional arguments:
-  filepath
+  filepath              path to filepath, or number of device to stream from
 
 options:
   -h, --help            show this help message and exit
