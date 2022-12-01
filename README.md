@@ -3,6 +3,39 @@ Modulates reading and writing data to a USB CD drive to make the onboard LED bli
 
 ## Sender
 
+### Overview
+This Python script will modulate the activity of an optical disk drive to transmit data. It requires a message to transmit and an encoding scheme to use. This can be provided via arguments or durring runtime. When providing the message to transmit via arguments you may provide either a string or a file containing the message to read. You can also provide a block length to the script to control the length of read operations used durring transmission, this optional. Once the message and codec are set the message will be encoded. Then the script will transmit the message by using Linux's dd utility to access the optical drive with device file `/dev/sr0`. It will first spin up the optical drive via a large read operation and then transmit the message via the appropriate function for the codec in use. When the message has been transmitted the script will print "Complete" and end.
+
+### How this should be used
+This is a proof of concept script to show that the behaviour of an optical drive's access light can be modulated to encode and trasmit data. It should be used for research and further development of this covert channel.
+
+### Dependancies
+- [Python3](https://www.python.org/downloads/)
+- An optical disk drive
+
+### How to run
+- To run without arguments use `python3 transmitter.py`
+- To run via arguments with a message use `python3 transmitter.py -c [codec choice] -m [message]`
+- To use an input file use `python3 transmitter.py -c [codec choice] -f [path to file]`
+- To set block size via argument use `python3 transmitter.py -b [block length]`
+
+### Usage Message
+```
+CD-Blink Covert Channel Transmitter
+usage: transmitter.py [-h] [-c CODEC] [-m MSG | -f FILE] [-b BLKL]
+
+CD-Blink Encoding and Transmission
+
+options:
+  -h, --help            show this help message and exit
+  -c CODEC, --codec CODEC
+                        Encoding Scheme: 1 = Morse(Alphanumeric Only) 2 = On-
+                        Off-Keying 3 = Binary Frequency Shift Keying
+  -m MSG, --msg MSG     Message to transmit
+  -f FILE, --file FILE  File to read message from
+  -b BLKL, --blkl BLKL  Length in KB of 1 unit for reading
+```
+
 ## Receiver
 
 ### Overview
