@@ -4,6 +4,8 @@ sender/a.out
 log.txt
 a.out
 sender/input.txt
+# too large
+morse_hello.mp4 
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
